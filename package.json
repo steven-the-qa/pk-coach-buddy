@@ -13,9 +13,11 @@
     "@lucide/lab": "^0.1.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
+    "@supabase/supabase-js": "^2.49.1",
     "expo": "52.0.33",
     "expo-blur": "^14.0.3",
     "expo-constants": "^17.0.5",
+    "expo-dev-client": "~5.0.12",
     "expo-font": "^13.0.3",
     "expo-haptics": "^14.0.1",
     "expo-linear-gradient": "^14.0.2",
@@ -25,6 +27,7 @@
     "expo-status-bar": "^2.0.1",
     "expo-symbols": "^0.2.2",
     "expo-system-ui": "^4.0.7",
+    "expo-updates": "~0.27.1",
     "expo-web-browser": "^14.0.2",
     "lucide-react-native": "^0.475.0",
     "react": "18.3.1",
@@ -37,9 +40,7 @@
     "react-native-svg": "^15.11.1",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "^0.19.13",
-    "react-native-webview": "13.12.5",
-    "expo-updates": "~0.27.1",
-    "expo-dev-client": "~5.0.12"
+    "react-native-webview": "13.12.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
