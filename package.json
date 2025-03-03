@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 expo start",
-    "build:ios": "eas build --profile development --platform ios",
-    "submit:ios": "eas submit --profile development --platform ios",
+    "build:ios": "eas build --profile production --platform ios",
+    "submit:ios": "eas submit --platform ios",
     "lint": "expo lint"
   },
   "dependencies": {
