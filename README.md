@@ -10,6 +10,64 @@ An AI-powered parkour coaching app to help coaches reflect, organize training se
 - **Knowledge Base**: Access coaching resources and ADAPT principles
 - **AI Assistance**: Get AI-powered insights into your coaching practice
 
+## Environment Variables
+
+This project uses environment variables to keep sensitive information like API keys secure.
+
+### Local Development
+
+1. Create a `.env` file at the root of the project (it's already in .gitignore)
+2. Add the following variables:
+
+```
+# Supabase Configuration
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-anon-key
+
+# Google/Gemini API Keys
+GEMINI_API_KEY=your-gemini-api-key
+GOOGLE_CLIENT_ID_IOS=your-google-client-id
+
+# Environment indicator
+APP_ENV=development
+```
+
+### Production Deployment
+
+For production builds with EAS, you need to set up secrets:
+
+```bash
+# Set up secrets in EAS (run these commands once)
+eas secret:create --scope project --name SUPABASE_URL --value "your-supabase-url"
+eas secret:create --scope project --name SUPABASE_KEY --value "your-supabase-key" 
+eas secret:create --scope project --name GEMINI_API_KEY --value "your-gemini-api-key"
+eas secret:create --scope project --name GOOGLE_CLIENT_ID_IOS --value "your-google-client-id"
+```
+
+## Supabase Setup
+
+To set up the Supabase database:
+
+1. Create a new project in Supabase
+2. Run the SQL scripts found in `sql/init.sql` to create the necessary tables
+3. Set up Row Level Security policies as defined in the scripts
+
+### Tables
+
+- **profiles**: Store user profile information
+- **sessions**: Coaching sessions data
+- **moves**: Parkour moves and techniques
+- **feedback**: Coach feedback on sessions
+- **goals**: User training goals
+- **workouts**: Predefined workout plans
+
+### Authentication
+
+This project uses Supabase Auth with multiple providers:
+- Email/Password
+- Google OAuth
+- Apple OAuth (iOS only)
+
 ## Setup Instructions
 
 ### Prerequisites

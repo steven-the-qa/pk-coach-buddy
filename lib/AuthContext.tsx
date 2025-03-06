@@ -51,7 +51,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return supabase.auth.signUp({ email, password });
     },
     signOut: async () => {
-      return supabase.auth.signOut();
+      console.log("AuthContext: signOut method called");
+      try {
+        // Clear any local state first
+        setUser(null);
+        setSession(null);
+        
+        // Then call Supabase auth signOut
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          console.error("AuthContext: Error during signOut:", error);
+          return { error };
+        }
+        
+        console.log("AuthContext: signOut successful");
+        return { error: null };
+      } catch (err) {
+        console.error("AuthContext: Exception during signOut:", err);
+        return { error: err };
+      }
     },
   };
 

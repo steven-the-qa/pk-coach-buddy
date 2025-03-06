@@ -2,11 +2,24 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 
-// Get Supabase URL and key from Constants with fallbacks
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl as string || 
-  "https://ovmsheguhtvhomizosbs.supabase.co";
-const supabaseKey = Constants.expoConfig?.extra?.supabaseKey as string || 
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bXNoZWd1aHR2aG9taXpvc2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3NjU0MjQsImV4cCI6MjA1NjM0MTQyNH0.h88UsrQTJSdA1RMwb2i6xt_4vWVktbQ12V261TQFbVc";
+// Function to safely access nested properties
+const getExpoConstant = (path: string[], defaultValue: string = ''): string => {
+  let current: any = Constants;
+  for (const segment of path) {
+    if (current === undefined || current === null) return defaultValue;
+    current = current[segment];
+  }
+  return current || defaultValue;
+};
+
+// Get Supabase credentials
+const supabaseUrl = getExpoConstant(['expoConfig', 'extra', 'supabaseUrl']);
+const supabaseKey = getExpoConstant(['expoConfig', 'extra', 'supabaseKey']);
+
+// Validate credentials
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Supabase credentials are missing. Check your environment configuration.');
+}
 
 // Initialize Supabase client
 export const supabase = createClient(supabaseUrl, supabaseKey);

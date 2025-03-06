@@ -1,39 +1,60 @@
 import 'dotenv/config';
 
 export default {
-  name: "PK Coach Buddy",
-  slug: "pk-coach-buddy",
-  version: "1.0.0",
-  orientation: "portrait",
-  icon: "./assets/icon.png",
-  userInterfaceStyle: "light",
-  splash: {
-    image: "./assets/splash.png",
-    resizeMode: "contain",
-    backgroundColor: "#ffffff"
-  },
-  assetBundlePatterns: [
-    "**/*"
-  ],
-  ios: {
-    supportsTablet: true,
-    bundleIdentifier: "com.stevenboutcher.pkcoachbuddy"
-  },
-  android: {
-    adaptiveIcon: {
-      foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#ffffff"
+  expo: {
+    name: "pk-coach-buddy",
+    slug: "pk-coach-buddy",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/images/icon.png",
+    scheme: "pk-coach-buddy",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.boutchersj.pkcoachbuddy",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
     },
-    package: "com.stevenboutcher.pkcoachbuddy"
+    web: {
+      bundler: "metro",
+      output: "single",
+      favicon: "./assets/images/favicon.png"
+    },
+    plugins: [
+      "expo-router"
+    ],
+    experiments: {
+      typedRoutes: true
+    },
+    extra: {
+      // Environment variables with fallbacks for development
+      supabaseUrl: process.env.SUPABASE_URL,
+      supabaseKey: process.env.SUPABASE_KEY,
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      googleClientIdIos: process.env.GOOGLE_CLIENT_ID_IOS,
+      
+      // Other configuration values
+      router: {
+        origin: false
+      },
+      eas: {
+        projectId: "93da7bf7-6205-43df-9ba1-5df12e3ffc66"
+      }
+    }
   },
-  web: {
-    favicon: "./assets/favicon.png"
-  },
-  extra: {
-    // Add environment variables here
-    supabaseUrl: process.env.SUPABASE_URL || "https://ovmsheguhtvhomizosbs.supabase.co",
-    supabaseKey: process.env.SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bXNoZWd1aHR2aG9taXpvc2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3NjU0MjQsImV4cCI6MjA1NjM0MTQyNH0.h88UsrQTJSdA1RMwb2i6xt_4vWVktbQ12V261TQFbVc",
-    geminiApiKey: process.env.GEMINI_API_KEY || "AIzaSyCFPzPJ9bzRe2bdQh4pEWfrAXDOK1NpPT0",
-    googleClientIdIos: process.env.GOOGLE_CLIENT_ID_IOS || "901638648628-oq81g7tje1rjv9c9417fdlrcvujsbkqt.apps.googleusercontent.com",
+  // Optional: Add environment-specific configuration
+  hooks: {
+    postPublish: [
+      {
+        file: "sentry-expo/upload-sourcemaps",
+        config: {
+          organization: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+          authToken: process.env.SENTRY_AUTH_TOKEN
+        }
+      }
+    ]
   }
 }; 
