@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../lib/AuthContext';
+import { logout } from '../lib/authUtils';
 
 type AuthProps = {
   onLogin?: () => void;
+  mode?: 'login' | 'signup' | 'logout';
 };
 
-const Auth: React.FC<AuthProps> = ({ onLogin }) => {
+const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(mode === 'signup');
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
 
   const handleAuth = async () => {
     setLoading(true);
@@ -33,6 +35,35 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       setLoading(false);
     }
   };
+
+  const handleLogout = async () => {
+    await logout({
+      showConfirmation: true,
+      showSuccess: true
+    });
+  };
+
+  // If in logout mode, just show the logout button
+  if (mode === 'logout') {
+    return (
+      <View style={styles.logoutContainer}>
+        {user && (
+          <Text style={styles.userInfo}>
+            Logged in as: {user.email}
+          </Text>
+        )}
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? 'Logging out...' : 'Log Out'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -90,6 +121,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  logoutContainer: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -109,6 +151,13 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
   },
+  logoutButton: {
+    backgroundColor: '#f44336',
+    borderRadius: 5,
+    padding: 12,
+    alignItems: 'center',
+    minWidth: 150,
+  },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
@@ -119,6 +168,11 @@ const styles = StyleSheet.create({
   },
   switchText: {
     color: '#6200ee',
+  },
+  userInfo: {
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
   },
 });
 

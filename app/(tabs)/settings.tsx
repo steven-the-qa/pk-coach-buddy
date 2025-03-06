@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Alert, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, LogOut, ChevronRight } from 'lucide-react-native';
+import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, LogOut } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { logout } from '../../lib/authUtils';
+import LogoutButton from '../../components/LogoutButton';
 
 export default function SettingsScreen() {
   const [darkMode, setDarkMode] = React.useState(true);
@@ -17,79 +19,6 @@ export default function SettingsScreen() {
     console.log("Settings Screen Mounted, Auth User:", user?.email);
     console.log("Auth Context signOut available:", typeof signOut === 'function');
   }, [user]);
-
-  const handleLogout = async () => {
-    console.log("Logout button clicked");
-    try {
-      // Show confirmation dialog
-      Alert.alert(
-        "Log Out",
-        "Are you sure you want to log out?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Log Out",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                setIsLoggingOut(true);
-                console.log("User confirmed logout, attempting to sign out...");
-                
-                // Check if we have the signOut function from context
-                if (typeof signOut === 'function') {
-                  console.log("Using AuthContext.signOut()");
-                  const { error } = await signOut();
-                  
-                  if (error) {
-                    console.error("AuthContext signOut error:", error);
-                    Alert.alert("Error", "There was a problem logging out. Please try again.");
-                  } else {
-                    console.log("AuthContext signOut successful");
-                    // Force navigation to auth screen
-                    if (typeof window !== 'undefined') {
-                      console.log("Web environment detected, using window.location");
-                      window.location.href = '/auth';
-                    } else {
-                      console.log("Native environment detected, using router.replace");
-                      router.replace('/auth');
-                    }
-                  }
-                } else {
-                  // Fallback to direct Supabase call if context method is unavailable
-                  console.log("AuthContext.signOut not available, falling back to direct Supabase call");
-                  const { error } = await supabase.auth.signOut();
-                  
-                  if (error) {
-                    console.error("Direct Supabase signOut error:", error);
-                    Alert.alert("Error", "There was a problem logging out. Please try again.");
-                  } else {
-                    console.log("Direct Supabase signOut successful");
-                    // Force navigation
-                    if (typeof window !== 'undefined') {
-                      window.location.href = '/auth';
-                    } else {
-                      router.replace('/auth');
-                    }
-                  }
-                }
-              } catch (error) {
-                console.error("Caught error during logout process:", error);
-                Alert.alert("Error", "There was a problem logging out. Please try again.");
-              } finally {
-                setIsLoggingOut(false);
-              }
-            }
-          }
-        ]
-      );
-    } catch (error) {
-      console.error("Error in handleLogout dialog:", error);
-      Alert.alert("Error", "There was a problem with the logout process. Please try again.");
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -187,22 +116,82 @@ export default function SettingsScreen() {
             
             <TouchableOpacity 
               style={styles.settingsItem}
-              onPress={handleLogout}
-              disabled={isLoggingOut}
+              accessible={true}
+              accessibilityLabel="Log out"
+              accessibilityHint="Double tap to log out from your account"
+              onPress={async () => {
+                // Prevent multiple clicks
+                if (isLoggingOut) return;
+                
+                console.log(`Settings: Logout button pressed on ${Platform.OS}`);
+                setIsLoggingOut(true);
+                
+                // Safety timeout to reset the loading state after 5 seconds
+                const safetyTimeout = setTimeout(() => {
+                  console.log(`Settings: Safety timeout triggered to reset loading state on ${Platform.OS}`);
+                  setIsLoggingOut(false);
+                }, 5000);
+                
+                try {
+                  console.log(`Settings: Calling logout function on ${Platform.OS}`);
+                  const success = await logout({ showConfirmation: true });
+                  console.log(`Settings: Logout result on ${Platform.OS}:`, success);
+                  
+                  if (success) {
+                    console.log(`Settings: Logout successful on ${Platform.OS}, preparing to navigate`);
+                    // Clear the safety timeout since we're handling completion
+                    clearTimeout(safetyTimeout);
+                    
+                    try {
+                      if (Platform.OS === 'web') {
+                        console.log(`Settings: Web platform detected, forcing page refresh to /auth`);
+                        // Force navigation on web by directly updating location
+                        window.location.href = '/auth';
+                      } else {
+                        console.log(`Settings: Native platform (${Platform.OS}), using router.replace`);
+                        // On mobile, we need to reset the loading state before navigation
+                        // to prevent state updates after component unmount
+                        setIsLoggingOut(false);
+                        // Small delay to ensure state is updated before navigation
+                        setTimeout(() => {
+                          try {
+                            router.replace('/auth');
+                          } catch (navError) {
+                            console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
+                          }
+                        }, 100);
+                      }
+                    } catch (navError) {
+                      console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
+                      setIsLoggingOut(false);
+                    }
+                  } else {
+                    // User canceled logout
+                    console.log(`Settings: User canceled logout on ${Platform.OS}`);
+                    clearTimeout(safetyTimeout);
+                    setIsLoggingOut(false);
+                  }
+                } catch (error) {
+                  clearTimeout(safetyTimeout);
+                  console.error(`Settings: Error during logout on ${Platform.OS}:`, error);
+                  if (Platform.OS !== 'web') {
+                    Alert.alert("Error", "Failed to log out. Please try again.");
+                  }
+                  setIsLoggingOut(false);
+                }
+              }}
             >
               <View style={styles.settingsItemLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: '#FFF7ED' }]}>
-                  {isLoggingOut ? (
-                    <ActivityIndicator size="small" color="#F97316" />
-                  ) : (
-                    <LogOut size={20} color="#F97316" />
-                  )}
+                  <LogOut size={20} color="#F97316" />
                 </View>
-                <Text style={styles.settingsItemText}>
-                  {isLoggingOut ? "Logging out..." : "Log Out"}
-                </Text>
+                <Text style={styles.settingsItemText}>Log Out</Text>
               </View>
-              <ChevronRight size={20} color="#64748B" />
+              {isLoggingOut ? (
+                <ActivityIndicator size="small" color="#F97316" />
+              ) : (
+                <ChevronRight size={20} color="#64748B" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
