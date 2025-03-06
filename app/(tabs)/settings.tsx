@@ -143,24 +143,18 @@ export default function SettingsScreen() {
                     clearTimeout(safetyTimeout);
                     
                     try {
-                      if (Platform.OS === 'web') {
-                        console.log(`Settings: Web platform detected, forcing page refresh to /auth`);
-                        // Force navigation on web by directly updating location
-                        window.location.href = '/auth';
-                      } else {
-                        console.log(`Settings: Native platform (${Platform.OS}), using router.replace`);
-                        // On mobile, we need to reset the loading state before navigation
-                        // to prevent state updates after component unmount
-                        setIsLoggingOut(false);
-                        // Small delay to ensure state is updated before navigation
-                        setTimeout(() => {
-                          try {
-                            router.replace('/auth');
-                          } catch (navError) {
-                            console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
-                          }
-                        }, 100);
-                      }
+                      // Reset loading state before navigation
+                      setIsLoggingOut(false);
+                      
+                      // Small delay to ensure state is updated before navigation
+                      setTimeout(() => {
+                        try {
+                          console.log(`Settings: Navigating to auth screen on ${Platform.OS}`);
+                          router.replace('/auth');
+                        } catch (navError) {
+                          console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
+                        }
+                      }, 100);
                     } catch (navError) {
                       console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
                       setIsLoggingOut(false);

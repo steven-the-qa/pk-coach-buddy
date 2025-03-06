@@ -17,64 +17,79 @@ declare global {
 }
 
 // This function protects routes from unauthorized access
-function useProtectedRoute() {
-  const { user, loading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
+const useProtectedRoute = () => {
+  const { user, loading: isLoading } = useAuth();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
-  const isWeb = typeof window !== 'undefined' && 'navigator' in window;
-
-  // For debugging purposes
+  const segment = useSegments();
+  const router = useRouter();
+  const currentSegment = segment[0];
+  
+  // Check if we're on an auth screen - needs to be done safely with string comparison
+  const onAuthScreen = currentSegment === 'auth';
+  const onProtectedScreen = currentSegment === '(tabs)';
+  
+  // Debug state
   useEffect(() => {
-    console.log("Auth state in useProtectedRoute:", { 
-      isAuthenticated: !!user, 
-      isLoading: loading,
-      currentSegment: segments?.[0],
+    console.log("Auth state in useProtectedRoute:", {
+      isAuthenticated: !!user,
+      isLoading,
+      currentSegment,
       isNavigationReady
     });
-  }, [user, loading, segments, isNavigationReady]);
+  }, [user, isLoading, currentSegment, isNavigationReady]);
 
-  // Set navigation as ready after the first render
+  // Set navigation ready after initial render
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsNavigationReady(true);
-    }, 300); // Longer delay to ensure layout is fully mounted
-    
+    }, 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  // Handle navigation redirects
   useEffect(() => {
-    if (loading || !isNavigationReady || !segments || segments.length === 0) return;
-
-    const inAuthGroup = segments[0] === '(tabs)';
-    const onAuthScreen = segments[0] === 'auth';
-    
-    try {
-      console.log("Handling navigation redirection:", { inAuthGroup, onAuthScreen, hasUser: !!user });
-      
-      // If no user and trying to access protected routes
-      if (!user && inAuthGroup) {
-        console.log("⚠️ User not authenticated but trying to access protected route. Redirecting to auth...");
-        if (isWeb) {
-          window.location.href = '/auth';
-        } else {
-          router.replace('/auth');
-        }
-      } 
-      // If user is authenticated but on auth screen, redirect to home
-      else if (user && onAuthScreen) {
-        console.log("✅ User is authenticated but on auth screen. Redirecting to home...");
-        if (isWeb) {
-          window.location.href = '/';
-        } else {
-          router.replace('/');
-        }
-      }
-    } catch (error) {
-      console.error("Error during navigation protection:", error);
+    if (!isNavigationReady) {
+      return; // Don't redirect until navigation is ready
     }
-  }, [user, segments, isNavigationReady, loading, router, isWeb]);
-}
+
+    const hasUser = !!user;
+
+    // For debugging
+    console.log("Handling navigation redirection:", {
+      hasUser,
+      onAuthScreen,
+      onProtectedScreen,
+      currentSegment
+    });
+
+    // Case 1: User is not signed in and is not on auth screen
+    if (!hasUser && !onAuthScreen) {
+      console.log("⚠️ User not authenticated but trying to access protected route. Redirecting to auth...");
+      try {
+        // Safe navigation that works on all platforms
+        router.replace("/auth");
+      } catch (error) {
+        console.error("Error during navigation protection:", error);
+      }
+    }
+
+    // Case 2: User is signed in and is on auth screen
+    if (hasUser && onAuthScreen) {
+      console.log("✅ User is authenticated but on auth screen. Redirecting to home...");
+      try {
+        // Safe navigation that works on all platforms
+        router.replace("/(tabs)");
+      } catch (error) {
+        console.error("Error during navigation protection:", error);
+      }
+    }
+  }, [user, isNavigationReady, currentSegment, router]);
+
+  return {
+    isAuthenticated: !!user,
+    isLoading
+  };
+};
 
 // This component wraps the app with the AuthProvider and implements route protection
 function RootLayoutNav() {
@@ -85,7 +100,7 @@ function RootLayoutNav() {
     setInitialRenderComplete(true);
   }, []);
   
-  useProtectedRoute();
+  const { isAuthenticated, isLoading } = useProtectedRoute();
   
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': require('../assets/fonts/Inter-Regular.ttf'),
