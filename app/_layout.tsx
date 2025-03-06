@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { SplashScreen } from 'expo-router';
 import { AuthProvider, useAuth } from '../lib/AuthContext';
+import { ThemeProvider } from '../lib/ThemeContext';
 import 'react-native-url-polyfill/auto';
 import { Text, View } from 'react-native';
 
@@ -143,9 +144,11 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ErrorBoundary>
-        <RootLayoutNav />
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <RootLayoutNav />
+        </ErrorBoundary>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

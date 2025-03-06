@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Search, Filter, Calendar, Clock, Users, Brain } from 'lucide-react-native';
+import { Plus, Search, Filter, Calendar, Clock, Users, Brain, ChevronRight } from 'lucide-react-native';
+import { useTheme } from '../../lib/ThemeContext';
 
 export default function SessionsScreen() {
+  const { theme, darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('upcoming');
   
@@ -64,9 +66,9 @@ export default function SessionsScreen() {
   const sessions = activeTab === 'upcoming' ? upcomingSessions : pastSessions;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Training Sessions</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Training Sessions</Text>
         <TouchableOpacity style={styles.newButton}>
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -119,39 +121,39 @@ export default function SessionsScreen() {
 
       <ScrollView style={styles.sessionsContainer}>
         {sessions.map((session) => (
-          <TouchableOpacity key={session.id} style={styles.sessionCard}>
+          <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.card }]}>
             <View style={styles.sessionHeader}>
-              <Text style={styles.sessionDate}>{session.date}</Text>
+              <Text style={[styles.sessionDate, { color: theme.secondaryText }]}>{session.date}</Text>
               {session.isAiGenerated && (
-                <View style={styles.aiGeneratedTag}>
-                  <Brain size={14} color="#8B5CF6" style={styles.aiIcon} />
-                  <Text style={styles.aiGeneratedText}>AI Generated</Text>
+                <View style={[styles.aiGeneratedTag, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
+                  <Brain size={14} color={darkMode ? '#93C5FD' : '#3B82F6'} style={styles.aiIcon} />
+                  <Text style={[styles.aiGeneratedText, { color: darkMode ? '#93C5FD' : '#3B82F6' }]}>AI Generated</Text>
                 </View>
               )}
             </View>
-            <Text style={styles.sessionTitle}>{session.title}</Text>
+            <Text style={[styles.sessionTitle, { color: theme.text }]}>{session.title}</Text>
             <View style={styles.sessionDetails}>
-              <View style={styles.detailItem}>
-                <Clock size={16} color="#64748B" style={styles.detailIcon} />
-                <Text style={styles.detailText}>{session.duration}</Text>
+              <View style={[styles.detailItem, { borderColor: theme.border }]}>
+                <Clock size={16} color={theme.secondaryText} style={styles.detailIcon} />
+                <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.duration}</Text>
               </View>
-              <View style={styles.detailItem}>
-                <Users size={16} color="#64748B" style={styles.detailIcon} />
-                <Text style={styles.detailText}>{session.participants}</Text>
+              <View style={[styles.detailItem, { borderColor: theme.border }]}>
+                <Users size={16} color={theme.secondaryText} style={styles.detailIcon} />
+                <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.participants}</Text>
               </View>
             </View>
             {activeTab === 'upcoming' ? (
-              <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.editButton}>
-                  <Text style={styles.editButtonText}>Edit</Text>
+              <View style={[styles.actionButtons, { borderColor: theme.border }]}>
+                <TouchableOpacity style={[styles.editButton, { borderColor: theme.border }]}>
+                  <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.startButton}>
-                  <Text style={styles.startButtonText}>Start Session</Text>
+                <TouchableOpacity style={[styles.startButton, { backgroundColor: theme.primary }]}>
+                  <Text style={[styles.startButtonText, { color: theme.text }]}>Start Session</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity style={styles.viewButton}>
-                <Text style={styles.viewButtonText}>View Details</Text>
+              <TouchableOpacity style={[styles.viewButton, { borderColor: theme.border }]}>
+                <Text style={[styles.viewButtonText, { color: theme.secondaryText }]}>View Details</Text>
               </TouchableOpacity>
             )}
           </TouchableOpacity>
@@ -159,9 +161,9 @@ export default function SessionsScreen() {
       </ScrollView>
 
       <View style={styles.fabContainer}>
-        <TouchableOpacity style={styles.fab}>
+        <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]}>
           <Plus size={24} color="#FFFFFF" />
-          <Text style={styles.fabText}>New Session</Text>
+          <Text style={[styles.fabText, { color: theme.text }]}>New Session</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -171,7 +173,6 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   header: {
     flexDirection: 'row',
@@ -184,7 +185,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#0F172A',
   },
   newButton: {
     backgroundColor: '#3B82F6',
@@ -283,7 +283,6 @@ const styles = StyleSheet.create({
   sessionDate: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#64748B',
   },
   aiGeneratedTag: {
     flexDirection: 'row',
@@ -315,6 +314,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   detailIcon: {
     marginRight: 6,
@@ -322,10 +323,11 @@ const styles = StyleSheet.create({
   detailText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
   actionButtons: {
     flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   editButton: {
     flex: 1,
@@ -339,7 +341,6 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#64748B',
   },
   startButton: {
     flex: 2,
@@ -363,7 +364,6 @@ const styles = StyleSheet.create({
   viewButtonText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#64748B',
   },
   fabContainer: {
     position: 'absolute',

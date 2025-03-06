@@ -1,15 +1,19 @@
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, Calendar, FileText, Lightbulb } from 'lucide-react-native';
+import { useTheme } from '../../lib/ThemeContext';
 
 export default function HomeScreen() {
+  const { theme, darkMode } = useTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.name}>Coach</Text>
+            <Text style={[styles.greeting, { color: theme.secondaryText }]}>Welcome back,</Text>
+            <Text style={[styles.name, { color: theme.text }]}>Coach</Text>
           </View>
           <TouchableOpacity style={styles.profileButton}>
             <Image
@@ -35,72 +39,80 @@ export default function HomeScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
         <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionCard}>
-            <View style={[styles.actionIcon, { backgroundColor: '#EFF6FF' }]}>
-              <FileText size={24} color="#3B82F6" />
+          <TouchableOpacity style={[styles.actionCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.actionIconContainer, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
+              <FileText size={24} color={darkMode ? '#93C5FD' : '#3B82F6'} />
             </View>
-            <Text style={styles.actionTitle}>New Journal Entry</Text>
-            <Text style={styles.actionDescription}>Reflect on your coaching</Text>
+            <Text style={[styles.actionTitle, { color: theme.text }]}>New Journal Entry</Text>
+            <Text style={[styles.actionDescription, { color: theme.secondaryText }]}>
+              Reflect on your coaching
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
-            <View style={[styles.actionIcon, { backgroundColor: '#F0FDF4' }]}>
-              <Calendar size={24} color="#22C55E" />
+          <TouchableOpacity style={[styles.actionCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.actionIconContainer, { backgroundColor: darkMode ? '#312E81' : '#F5F3FF' }]}>
+              <Calendar size={24} color={darkMode ? '#A5B4FC' : '#8B5CF6'} />
             </View>
-            <Text style={styles.actionTitle}>Plan Session</Text>
-            <Text style={styles.actionDescription}>Create a new training plan</Text>
+            <Text style={[styles.actionTitle, { color: theme.text }]}>Plan Session</Text>
+            <Text style={[styles.actionDescription, { color: theme.secondaryText }]}>
+              Create a new training plan
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FEF2F2' }]}>
-              <Brain size={24} color="#EF4444" />
+          <TouchableOpacity style={[styles.actionCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.actionIconContainer, { backgroundColor: darkMode ? '#7C2D12' : '#FFF7ED' }]}>
+              <Brain size={24} color={darkMode ? '#FDBA74' : '#F97316'} />
             </View>
-            <Text style={styles.actionTitle}>AI Insights</Text>
-            <Text style={styles.actionDescription}>Get coaching suggestions</Text>
+            <Text style={[styles.actionTitle, { color: theme.text }]}>AI Insights</Text>
+            <Text style={[styles.actionDescription, { color: theme.secondaryText }]}>
+              Get coaching suggestions
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FFF7ED' }]}>
-              <Lightbulb size={24} color="#F97316" />
+          <TouchableOpacity style={[styles.actionCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.actionIconContainer, { backgroundColor: darkMode ? '#14532D' : '#F0FDF4' }]}>
+              <Lightbulb size={24} color={darkMode ? '#86EFAC' : '#22C55E'} />
             </View>
-            <Text style={styles.actionTitle}>Knowledge Base</Text>
-            <Text style={styles.actionDescription}>Explore ADAPT principles</Text>
+            <Text style={[styles.actionTitle, { color: theme.text }]}>Knowledge Base</Text>
+            <Text style={[styles.actionDescription, { color: theme.secondaryText }]}>
+              Explore ADAPT principles
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <View style={styles.recentActivity}>
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconContainer}>
-              <FileText size={20} color="#3B82F6" />
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
+        <View style={[styles.recentActivityContainer, { backgroundColor: theme.card }]}>
+          <TouchableOpacity style={[styles.activityItem, { borderBottomColor: theme.border }]}>
+            <View style={[styles.activityIconContainer, { backgroundColor: darkMode ? '#1E3A8A' : '#F8FAFC' }]}>
+              <FileText size={20} color={darkMode ? '#93C5FD' : '#3B82F6'} />
             </View>
             <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Journal Entry: Beginner Class Reflection</Text>
-              <Text style={styles.activityTime}>Today, 2:30 PM</Text>
+              <Text style={[styles.activityTitle, { color: theme.text }]}>Journal Entry: Beginner Class Reflection</Text>
+              <Text style={[styles.activityTime, { color: theme.secondaryText }]}>Today, 2:30 PM</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconContainer}>
-              <Calendar size={20} color="#22C55E" />
+          <TouchableOpacity style={[styles.activityItem, { borderBottomColor: theme.border }]}>
+            <View style={[styles.activityIconContainer, { backgroundColor: darkMode ? '#312E81' : '#F8FAFC' }]}>
+              <Calendar size={20} color={darkMode ? '#A5B4FC' : '#8B5CF6'} />
             </View>
             <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Session Plan: Advanced Vaults</Text>
-              <Text style={styles.activityTime}>Yesterday, 10:15 AM</Text>
+              <Text style={[styles.activityTitle, { color: theme.text }]}>Session Plan: Advanced Vaults</Text>
+              <Text style={[styles.activityTime, { color: theme.secondaryText }]}>Yesterday, 10:15 AM</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.activityItem}>
-            <View style={styles.activityIconContainer}>
-              <Brain size={20} color="#EF4444" />
+          <TouchableOpacity style={styles.activityItem}>
+            <View style={[styles.activityIconContainer, { backgroundColor: darkMode ? '#7C2D12' : '#F8FAFC' }]}>
+              <Brain size={20} color={darkMode ? '#FDBA74' : '#F97316'} />
             </View>
             <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>AI Insight: Progression Suggestions</Text>
-              <Text style={styles.activityTime}>2 days ago, 4:45 PM</Text>
+              <Text style={[styles.activityTitle, { color: theme.text }]}>AI Insight: Progression Suggestions</Text>
+              <Text style={[styles.activityTime, { color: theme.secondaryText }]}>2 days ago, 4:45 PM</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -110,7 +122,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   scrollView: {
     flex: 1,
@@ -125,12 +136,10 @@ const styles = StyleSheet.create({
   greeting: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#64748B',
   },
   name: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#0F172A',
   },
   profileButton: {
     width: 48,
@@ -184,7 +193,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#0F172A',
     marginBottom: 16,
   },
   quickActions: {
@@ -205,7 +213,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  actionIcon: {
+  actionIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 12,
@@ -216,15 +224,12 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    color: '#0F172A',
-    marginBottom: 4,
   },
   actionDescription: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
   },
-  recentActivity: {
+  recentActivityContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
@@ -257,12 +262,9 @@ const styles = StyleSheet.create({
   activityTitle: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#0F172A',
-    marginBottom: 4,
   },
   activityTime: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    color: '#64748B',
   },
 });

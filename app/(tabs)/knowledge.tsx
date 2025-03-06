@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight } from 'lucide-react-native';
+import { useTheme } from '../../lib/ThemeContext';
 
 export default function KnowledgeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { theme, darkMode } = useTheme();
   
   const categories = [
     {
@@ -12,21 +14,21 @@ export default function KnowledgeScreen() {
       title: 'ADAPT Coaching Principles',
       description: 'Core methodologies and philosophies',
       icon: <BookOpen size={24} color="#3B82F6" />,
-      color: '#EFF6FF',
+      color: darkMode ? '#1E3A8A' : '#EFF6FF',
     },
     {
       id: '2',
       title: 'Coaching Techniques',
       description: 'Effective teaching strategies',
-      icon: <MessageSquare size={24} color="#8B5CF6" />,
-      color: '#F5F3FF',
+      icon: <MessageSquare size={24} color={darkMode ? '#A5B4FC' : '#8B5CF6'} />,
+      color: darkMode ? '#312E81' : '#F5F3FF',
     },
     {
       id: '3',
       title: 'Movement Progressions',
       description: 'Structured skill development',
-      icon: <Lightbulb size={24} color="#F97316" />,
-      color: '#FFF7ED',
+      icon: <Lightbulb size={24} color={darkMode ? '#FDBA74' : '#F97316'} />,
+      color: darkMode ? '#7C2D12' : '#FFF7ED',
     },
   ];
   
@@ -51,19 +53,28 @@ export default function KnowledgeScreen() {
     },
   ];
 
+  const recentSearches = [
+    'Coaching youth classes',
+    'Precision jump progressions',
+    'ADAPT certification requirements',
+  ];
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Knowledge Base</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Knowledge Base</Text>
+        <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+          Reference materials and coaching resources
+        </Text>
       </View>
 
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={20} color="#64748B" style={styles.searchIcon} />
+        <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
-            placeholder="Search knowledge base"
-            placeholderTextColor="#94A3B8"
+            style={[styles.searchInput, { color: theme.text }]}
+            placeholder="Search knowledge base..."
+            placeholderTextColor={theme.secondaryText}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -86,52 +97,60 @@ export default function KnowledgeScreen() {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Categories</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Categories</Text>
         <View style={styles.categoriesContainer}>
           {categories.map((category) => (
-            <TouchableOpacity key={category.id} style={styles.categoryCard}>
+            <TouchableOpacity
+              key={category.id}
+              style={[styles.categoryCard, { backgroundColor: theme.card }]}
+            >
               <View style={[styles.categoryIconContainer, { backgroundColor: category.color }]}>
                 {category.icon}
               </View>
               <View style={styles.categoryContent}>
-                <Text style={styles.categoryTitle}>{category.title}</Text>
-                <Text style={styles.categoryDescription}>{category.description}</Text>
+                <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
+                <Text style={[styles.categoryDescription, { color: theme.secondaryText }]}>
+                  {category.description}
+                </Text>
               </View>
-              <ChevronRight size={20} color="#64748B" />
+              <ChevronRight size={20} color={theme.secondaryText} />
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Featured Articles</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Articles</Text>
         <View style={styles.articlesContainer}>
           {featuredArticles.map((article) => (
-            <TouchableOpacity key={article.id} style={styles.articleCard}>
+            <TouchableOpacity key={article.id} style={[styles.articleCard, { backgroundColor: theme.card }]}>
               <Image
                 source={{ uri: article.image }}
                 style={styles.articleImage}
               />
               <View style={styles.articleContent}>
-                <Text style={styles.articleTitle}>{article.title}</Text>
-                <Text style={styles.articleDescription}>{article.description}</Text>
+                <Text style={[styles.articleTitle, { color: theme.text }]}>{article.title}</Text>
+                <Text style={[styles.articleDescription, { color: theme.secondaryText }]}>
+                  {article.description}
+                </Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Recent Searches</Text>
-        <View style={styles.recentSearchesContainer}>
-          <TouchableOpacity style={styles.recentSearchItem}>
-            <Search size={16} color="#64748B" style={styles.recentSearchIcon} />
-            <Text style={styles.recentSearchText}>Coaching youth classes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.recentSearchItem}>
-            <Search size={16} color="#64748B" style={styles.recentSearchIcon} />
-            <Text style={styles.recentSearchText}>Precision jump progressions</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.recentSearchItem}>
-            <Search size={16} color="#64748B" style={styles.recentSearchIcon} />
-            <Text style={styles.recentSearchText}>ADAPT certification requirements</Text>
-          </TouchableOpacity>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
+        <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
+          {recentSearches.map((search, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={[
+                styles.recentSearchItem, 
+                { borderBottomColor: theme.border },
+                index === recentSearches.length - 1 ? { borderBottomWidth: 0 } : {}
+              ]}
+            >
+              <Search size={18} color={theme.secondaryText} style={styles.recentSearchIcon} />
+              <Text style={[styles.recentSearchText, { color: theme.text }]}>{search}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -141,7 +160,6 @@ export default function KnowledgeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   header: {
     paddingHorizontal: 16,
@@ -151,7 +169,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#0F172A',
+  },
+  subtitle: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
   },
   searchContainer: {
     paddingHorizontal: 16,

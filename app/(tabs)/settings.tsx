@@ -3,16 +3,21 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Al
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, LogOut } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
+import { useTheme } from '../../lib/ThemeContext';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { logout } from '../../lib/authUtils';
 import LogoutButton from '../../components/LogoutButton';
 
+// Theme definitions moved to ThemeContext.tsx
+
 export default function SettingsScreen() {
-  const [darkMode, setDarkMode] = React.useState(true);
   const [notifications, setNotifications] = React.useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, signOut } = useAuth();
+  
+  // Use the shared theme context
+  const { darkMode, setDarkMode, theme } = useTheme();
   
   // Verify we have the auth context on mount
   useEffect(() => {
@@ -21,75 +26,75 @@ export default function SettingsScreen() {
   }, [user]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
       </View>
 
       <ScrollView style={styles.contentContainer}>
-        <View style={styles.profileSection}>
+        <View style={[styles.profileSection, { backgroundColor: theme.card }]}>
           <Image
             source={{ uri: 'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80' }}
             style={styles.profileImage}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.email ? user.email.split('@')[0] : 'User'}</Text>
-            <Text style={styles.profileEmail}>{user?.email || 'user@example.com'}</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>{user?.email ? user.email.split('@')[0] : 'User'}</Text>
+            <Text style={[styles.profileEmail, { color: theme.secondaryText }]}>{user?.email || 'user@example.com'}</Text>
           </View>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit</Text>
+          <TouchableOpacity style={[styles.editButton, { borderColor: theme.buttonBorder }]}>
+            <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Account</Text>
+          <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
+            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#EFF6FF' }]}>
-                  <User size={20} color="#3B82F6" />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
+                  <User size={20} color={darkMode ? '#93C5FD' : '#3B82F6'} />
                 </View>
-                <Text style={styles.settingsItemText}>Profile Information</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Profile Information</Text>
               </View>
-              <ChevronRight size={20} color="#64748B" />
+              <ChevronRight size={20} color={theme.secondaryText} />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#F0FDF4' }]}>
-                  <Shield size={20} color="#22C55E" />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#14532D' : '#F0FDF4' }]}>
+                  <Shield size={20} color={darkMode ? '#86EFAC' : '#22C55E'} />
                 </View>
-                <Text style={styles.settingsItemText}>Privacy & Security</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Privacy & Security</Text>
               </View>
-              <ChevronRight size={20} color="#64748B" />
+              <ChevronRight size={20} color={theme.secondaryText} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <View style={styles.settingsCard}>
-            <View style={styles.settingsItem}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Preferences</Text>
+          <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#FEF2F2' }]}>
-                  <Bell size={20} color="#EF4444" />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#7F1D1D' : '#FEF2F2' }]}>
+                  <Bell size={20} color={darkMode ? '#FCA5A5' : '#EF4444'} />
                 </View>
-                <Text style={styles.settingsItemText}>Notifications</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Notifications</Text>
               </View>
               <Switch
                 value={notifications}
                 onValueChange={setNotifications}
-                trackColor={{ false: '#E2E8F0', true: '#BFDBFE' }}
-                thumbColor={notifications ? '#3B82F6' : '#F1F5F9'}
+                trackColor={{ false: darkMode ? '#4B5563' : '#E2E8F0', true: '#BFDBFE' }}
+                thumbColor={notifications ? '#3B82F6' : darkMode ? '#6B7280' : '#F1F5F9'}
               />
             </View>
             
             <View style={styles.settingsItem}>
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#F8FAFC' }]}>
-                  <Moon size={20} color="#64748B" />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#312E81' : '#F8FAFC' }]}>
+                  <Moon size={20} color={darkMode ? '#A5B4FC' : '#64748B'} />
                 </View>
-                <Text style={styles.settingsItemText}>Dark Mode</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Dark Mode</Text>
               </View>
               <Switch
                 value={darkMode}
@@ -102,97 +107,29 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Support</Text>
-          <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Support</Text>
+          <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
+            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#F0F9FF' }]}>
-                  <HelpCircle size={20} color="#0EA5E9" />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#0C4A6E' : '#F0F9FF' }]}>
+                  <HelpCircle size={20} color={darkMode ? '#7DD3FC' : '#0EA5E9'} />
                 </View>
-                <Text style={styles.settingsItemText}>Help & Support</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Help & Support</Text>
               </View>
-              <ChevronRight size={20} color="#64748B" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.settingsItem}
-              accessible={true}
-              accessibilityLabel="Log out"
-              accessibilityHint="Double tap to log out from your account"
-              onPress={async () => {
-                // Prevent multiple clicks
-                if (isLoggingOut) return;
-                
-                console.log(`Settings: Logout button pressed on ${Platform.OS}`);
-                setIsLoggingOut(true);
-                
-                // Safety timeout to reset the loading state after 5 seconds
-                const safetyTimeout = setTimeout(() => {
-                  console.log(`Settings: Safety timeout triggered to reset loading state on ${Platform.OS}`);
-                  setIsLoggingOut(false);
-                }, 5000);
-                
-                try {
-                  console.log(`Settings: Calling logout function on ${Platform.OS}`);
-                  const success = await logout({ showConfirmation: true });
-                  console.log(`Settings: Logout result on ${Platform.OS}:`, success);
-                  
-                  if (success) {
-                    console.log(`Settings: Logout successful on ${Platform.OS}, preparing to navigate`);
-                    // Clear the safety timeout since we're handling completion
-                    clearTimeout(safetyTimeout);
-                    
-                    try {
-                      // Reset loading state before navigation
-                      setIsLoggingOut(false);
-                      
-                      // Small delay to ensure state is updated before navigation
-                      setTimeout(() => {
-                        try {
-                          console.log(`Settings: Navigating to auth screen on ${Platform.OS}`);
-                          router.replace('/auth');
-                        } catch (navError) {
-                          console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
-                        }
-                      }, 100);
-                    } catch (navError) {
-                      console.error(`Settings: Navigation error on ${Platform.OS}:`, navError);
-                      setIsLoggingOut(false);
-                    }
-                  } else {
-                    // User canceled logout
-                    console.log(`Settings: User canceled logout on ${Platform.OS}`);
-                    clearTimeout(safetyTimeout);
-                    setIsLoggingOut(false);
-                  }
-                } catch (error) {
-                  clearTimeout(safetyTimeout);
-                  console.error(`Settings: Error during logout on ${Platform.OS}:`, error);
-                  if (Platform.OS !== 'web') {
-                    Alert.alert("Error", "Failed to log out. Please try again.");
-                  }
-                  setIsLoggingOut(false);
-                }
-              }}
-            >
-              <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: '#FFF7ED' }]}>
-                  <LogOut size={20} color="#F97316" />
-                </View>
-                <Text style={styles.settingsItemText}>Log Out</Text>
-              </View>
-              {isLoggingOut ? (
-                <ActivityIndicator size="small" color="#F97316" />
-              ) : (
-                <ChevronRight size={20} color="#64748B" />
-              )}
+              <ChevronRight size={20} color={theme.secondaryText} />
             </TouchableOpacity>
           </View>
         </View>
 
+        <View style={{ marginBottom: 24 }}>
+          <LogoutButton 
+            color={darkMode ? '#3B82F6' : '#3B82F6'} 
+          />
+        </View>
+        
         <View style={styles.aboutSection}>
-          <Text style={styles.appVersion}>AI-Powered Parkour Coaching App v1.0.0</Text>
-          <Text style={styles.appCopyright}>© 2025 ADAPT Parkour</Text>
+          <Text style={[styles.appVersion, { color: theme.secondaryText }]}>PK Coach Buddy v1.0.0</Text>
+          <Text style={[styles.appCopyright, { color: theme.tertiaryText }]}>© 2025 ADAPT Parkour</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -202,7 +139,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    // backgroundColor is now applied dynamically
   },
   header: {
     paddingHorizontal: 16,
@@ -212,7 +149,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#0F172A',
+    // color is now applied dynamically
   },
   contentContainer: {
     flex: 1,
@@ -221,7 +158,7 @@ const styles = StyleSheet.create({
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    // backgroundColor is now applied dynamically
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -243,25 +180,25 @@ const styles = StyleSheet.create({
   profileName: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#0F172A',
+    // color is now applied dynamically
     marginBottom: 4,
   },
   profileEmail: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
+    // color is now applied dynamically
   },
   editButton: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    // borderColor is now applied dynamically
   },
   editButtonText: {
     fontFamily: 'Inter-Medium',
     fontSize: 14,
-    color: '#64748B',
+    // color is now applied dynamically
   },
   sectionContainer: {
     marginBottom: 24,
@@ -269,11 +206,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#0F172A',
+    // color is now applied dynamically
     marginBottom: 12,
   },
   settingsCard: {
-    backgroundColor: '#FFFFFF',
+    // backgroundColor is now applied dynamically
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -288,7 +225,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    // borderBottomColor is now applied dynamically
   },
   settingsItemLeft: {
     flexDirection: 'row',
@@ -301,11 +238,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    // backgroundColor is now applied dynamically per icon
   },
   settingsItemText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#0F172A',
+    // color is now applied dynamically
   },
   aboutSection: {
     alignItems: 'center',
@@ -314,12 +252,12 @@ const styles = StyleSheet.create({
   appVersion: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
+    // color is now applied dynamically
     marginBottom: 4,
   },
   appCopyright: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    color: '#94A3B8',
+    // color is now applied dynamically
   },
 });

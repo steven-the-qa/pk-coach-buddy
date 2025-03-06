@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/ThemeContext';
 import { logout } from '../lib/authUtils';
 
 type AuthProps = {
@@ -13,6 +14,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(mode === 'signup');
+  const { theme, darkMode } = useTheme();
 
   const { signIn, signUp, user } = useAuth();
 
@@ -46,9 +48,9 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   // If in logout mode, just show the logout button
   if (mode === 'logout') {
     return (
-      <View style={styles.logoutContainer}>
+      <View style={[styles.logoutContainer, { backgroundColor: theme.card }]}>
         {user && (
-          <Text style={styles.userInfo}>
+          <Text style={[styles.userInfo, { color: theme.text }]}>
             Logged in as: {user.email}
           </Text>
         )}
@@ -66,14 +68,18 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
+      <Text style={[styles.title, { color: theme.primary }]}>
         {isSignUp ? 'Create an account' : 'Sign in to your account'}
       </Text>
       
       <TextInput
-        style={styles.input}
+        style={[styles.input, { 
+          backgroundColor: darkMode ? '#374151' : '#f5f5f5',
+          color: theme.text
+        }]}
         placeholder="Email"
+        placeholderTextColor={theme.secondaryText}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -81,15 +87,19 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
       />
       
       <TextInput
-        style={styles.input}
+        style={[styles.input, { 
+          backgroundColor: darkMode ? '#374151' : '#f5f5f5',
+          color: theme.text
+        }]}
         placeholder="Password"
+        placeholderTextColor={theme.secondaryText}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       
       <TouchableOpacity 
-        style={styles.button}
+        style={[styles.button, { backgroundColor: theme.primary }]}
         onPress={handleAuth}
         disabled={loading}
       >
@@ -102,7 +112,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
         onPress={() => setIsSignUp(!isSignUp)}
         style={styles.switchButton}
       >
-        <Text style={styles.switchText}>
+        <Text style={[styles.switchText, { color: theme.primary }]}>
           {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
         </Text>
       </TouchableOpacity>
@@ -113,7 +123,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -124,7 +133,6 @@ const styles = StyleSheet.create({
   logoutContainer: {
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -137,16 +145,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#6200ee',
   },
   input: {
-    backgroundColor: '#f5f5f5',
     borderRadius: 5,
     padding: 10,
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#6200ee',
     borderRadius: 5,
     padding: 12,
     alignItems: 'center',
@@ -167,12 +172,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchText: {
-    color: '#6200ee',
   },
   userInfo: {
     marginBottom: 15,
     fontSize: 16,
-    color: '#333',
   },
 });
 

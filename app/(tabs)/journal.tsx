@@ -2,89 +2,84 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Search, Filter, FileText, Brain } from 'lucide-react-native';
+import { useTheme } from '../../lib/ThemeContext';
 
 export default function JournalScreen() {
+  const { theme, darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   
   const journalEntries = [
     {
       id: '1',
-      title: 'Beginner Class Reflection',
-      date: 'Today, 2:30 PM',
-      summary: 'Students struggled with basic vaults. Need to develop more progressive drills.',
-      hasAiInsight: true,
+      date: 'May 12, 2023',
+      title: 'Youth Class Reflection',
+      content: 'Today\'s youth class focused on balance drills. Many students struggled with the rail precision exercises. Need to develop more progressive drills for balance work.',
+      isAiAnalyzed: true,
     },
     {
       id: '2',
-      title: 'Advanced Group Progress',
-      date: 'Yesterday, 10:15 AM',
-      summary: 'Great progress on precision jumps. Consider adding rail balance challenges next week.',
-      hasAiInsight: true,
+      date: 'May 8, 2023',
+      title: 'Advanced Group Session',
+      content: 'The advanced group made excellent progress on the complex route I designed. Their teamwork was particularly impressive when tackling the challenging wall section.',
+      isAiAnalyzed: false,
     },
     {
       id: '3',
-      title: 'Youth Class Challenges',
-      date: '2 days ago, 4:45 PM',
-      summary: 'Attention spans varied widely. Need to incorporate more games into the warm-up.',
-      hasAiInsight: false,
-    },
-    {
-      id: '4',
-      title: 'Private Coaching Session',
-      date: '1 week ago, 3:00 PM',
-      summary: 'Client has fear issues with height. Developed gradual progression plan.',
-      hasAiInsight: true,
+      date: 'May 3, 2023',
+      title: 'New Coaching Approach',
+      content: 'Tried a new coaching approach today focusing more on student self-assessment. Asked them to analyze their own movement before offering my feedback. This seemed to improve retention.',
+      isAiAnalyzed: true,
     },
   ];
-
+  
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Coaching Journal</Text>
-        <TouchableOpacity style={styles.newButton}>
+        <Text style={[styles.title, { color: theme.text }]}>Coaching Journal</Text>
+        <TouchableOpacity style={[styles.newButton, { backgroundColor: theme.primary }]}>
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-
+      
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={20} color="#64748B" style={styles.searchIcon} />
+        <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.text }]}
             placeholder="Search journal entries"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.secondaryText}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#64748B" />
+        <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Filter size={20} color={theme.secondaryText} />
         </TouchableOpacity>
       </View>
-
+      
       <ScrollView style={styles.entriesContainer}>
         {journalEntries.map((entry) => (
-          <TouchableOpacity key={entry.id} style={styles.entryCard}>
+          <TouchableOpacity key={entry.id} style={[styles.entryCard, { backgroundColor: theme.card }]}>
             <View style={styles.entryHeader}>
-              <View style={styles.entryIconContainer}>
-                <FileText size={20} color="#3B82F6" />
-              </View>
-              <Text style={styles.entryDate}>{entry.date}</Text>
+              <Text style={[styles.entryDate, { color: theme.secondaryText }]}>{entry.date}</Text>
+              {entry.isAiAnalyzed && (
+                <View style={[styles.aiTag, { backgroundColor: darkMode ? '#312E81' : '#F5F3FF' }]}>
+                  <Brain size={14} color={darkMode ? '#A5B4FC' : '#8B5CF6'} style={styles.aiIcon} />
+                  <Text style={[styles.aiText, { color: darkMode ? '#A5B4FC' : '#8B5CF6' }]}>AI Analyzed</Text>
+                </View>
+              )}
             </View>
-            <Text style={styles.entryTitle}>{entry.title}</Text>
-            <Text style={styles.entrySummary}>{entry.summary}</Text>
-            {entry.hasAiInsight && (
-              <View style={styles.insightContainer}>
-                <Brain size={16} color="#8B5CF6" style={styles.insightIcon} />
-                <Text style={styles.insightText}>AI Insight Available</Text>
-              </View>
-            )}
+            
+            <Text style={[styles.entryTitle, { color: theme.text }]}>{entry.title}</Text>
+            <Text style={[styles.entrySummary, { color: theme.secondaryText }]} numberOfLines={3}>
+              {entry.content}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
-
+      
       <View style={styles.fabContainer}>
-        <TouchableOpacity style={styles.fab}>
+        <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]}>
           <Plus size={24} color="#FFFFFF" />
           <Text style={styles.fabText}>New Entry</Text>
         </TouchableOpacity>
@@ -96,7 +91,6 @@ export default function JournalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   header: {
     flexDirection: 'row',
@@ -109,13 +103,11 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    color: '#0F172A',
   },
   newButton: {
-    backgroundColor: '#3B82F6',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -128,15 +120,11 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginRight: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingVertical: 8,
+    marginRight: 12,
   },
   searchIcon: {
     marginRight: 8,
@@ -145,28 +133,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    color: '#0F172A',
-    paddingVertical: 12,
+    paddingVertical: 4,
   },
   filterButton: {
-    backgroundColor: '#FFFFFF',
     width: 44,
     height: 44,
+    borderWidth: 1,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
   },
   entriesContainer: {
     flex: 1,
     paddingHorizontal: 16,
   },
   entryCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -178,51 +159,37 @@ const styles = StyleSheet.create({
   },
   entryHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  entryIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#EFF6FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    marginBottom: 8,
   },
   entryDate: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#64748B',
+  },
+  aiTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+  },
+  aiIcon: {
+    marginRight: 4,
+  },
+  aiText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
   },
   entryTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    color: '#0F172A',
     marginBottom: 8,
   },
   entrySummary: {
     fontFamily: 'Inter-Regular',
-    fontSize: 16,
-    color: '#334155',
-    marginBottom: 12,
-  },
-  insightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F3FF',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-  },
-  insightIcon: {
-    marginRight: 6,
-  },
-  insightText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-    color: '#8B5CF6',
+    fontSize: 14,
+    lineHeight: 20,
   },
   fabContainer: {
     position: 'absolute',
@@ -231,7 +198,6 @@ const styles = StyleSheet.create({
   },
   fab: {
     flexDirection: 'row',
-    backgroundColor: '#3B82F6',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 28,
