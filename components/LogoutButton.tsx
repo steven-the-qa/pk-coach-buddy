@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { logout } from '../lib/authUtils';
 import { LogOut } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -34,33 +34,24 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     
     try {
       console.log("LogoutButton: Calling logout function");
+      // Let the authUtils handle all routing - don't try to do it here
       const success = await logout({ 
         showConfirmation,
-        // We'll handle redirection here directly instead of in the util
-        redirectTo: '/auth' 
+        // The logout utility will handle navigation after signOut
+        redirectTo: '/auth',
+        // Pass in our loading state handler
+        setLoading: setIsLoggingOut
       });
       
       console.log("LogoutButton: Logout result:", success);
       
-      if (success) {
-        // If successful, manually redirect
-        console.log("LogoutButton: Manual redirect to /auth");
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth';
-        } else {
-          router.replace('/auth');
-        }
-        
-        // Call the completion handler if provided
-        if (onLogoutComplete) {
-          onLogoutComplete();
-        }
+      if (success && onLogoutComplete) {
+        // Only call completion handler, let logout handle the navigation
+        onLogoutComplete();
       }
     } catch (error) {
       console.error("LogoutButton: Error during logout:", error);
-    } finally {
-      console.log("LogoutButton: Resetting loading state");
-      // Always reset the loading state, even if there was an error
+      // Reset loading state in case of error
       setIsLoggingOut(false);
     }
   };

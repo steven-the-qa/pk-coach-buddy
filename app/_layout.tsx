@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, Redirect, useRouter, useSegments } from 'expo-router';
+import { Stack, Redirect, useRouter, useSegments, Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import { SplashScreen } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from '../lib/AuthContext';
 import { ThemeProvider } from '../lib/ThemeContext';
 import 'react-native-url-polyfill/auto';
 import { Text, View } from 'react-native';
+import LoadingScreen from '../components/LoadingScreen';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
@@ -92,16 +93,24 @@ const useProtectedRoute = () => {
   };
 };
 
-// This component wraps the app with the AuthProvider and implements route protection
+// Root layout wrapper with providers
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <StatusBar style="auto" />
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+// Navigation component that handles authentication state
 function RootLayoutNav() {
+  const router = useRouter();
+  const { loading: authLoading, session } = useAuth();
   const [initialRenderComplete, setInitialRenderComplete] = useState(false);
-  
-  useEffect(() => {
-    // This forces a re-render after mounting to ensure all components have loaded
-    setInitialRenderComplete(true);
-  }, []);
-  
-  const { isAuthenticated, isLoading } = useProtectedRoute();
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
   
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': require('../assets/fonts/Inter-Regular.ttf'),
@@ -110,17 +119,53 @@ function RootLayoutNav() {
     'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
   });
 
+  // Mark initial render as complete
+  useEffect(() => {
+    setInitialRenderComplete(true);
+  }, []);
+
+  // Handle font loading
   useEffect(() => {
     if (fontsLoaded || fontError) {
       // Hide the splash screen after the fonts have loaded (or an error was returned)
       SplashScreen.hideAsync();
     }
-    window.frameworkReady?.();
+    
+    // For web compatibility
+    if (typeof window !== 'undefined' && window.frameworkReady) {
+      window.frameworkReady();
+    }
   }, [fontsLoaded, fontError]);
 
-  // Prevent rendering until the font has loaded or an error was returned
-  if (!fontsLoaded && !fontError) {
-    return null;
+  // Mark navigation as ready after initial render and when the Slot is mounted
+  useEffect(() => {
+    if (initialRenderComplete) {
+      // Set a small delay to ensure navigation container is ready
+      const timer = setTimeout(() => {
+        setIsNavigationReady(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [initialRenderComplete]);
+
+  // Handle authentication redirects only after navigation is ready
+  useEffect(() => {
+    // Only redirect if navigation is ready, auth check is complete, and fonts are loaded
+    if (isNavigationReady && !authLoading && (fontsLoaded || fontError)) {
+      if (session) {
+        // User is logged in
+        router.replace('/(tabs)');
+      } else {
+        // User is not logged in
+        router.replace('/auth');
+      }
+    }
+  }, [isNavigationReady, authLoading, session, router, fontsLoaded, fontError]);
+
+  // Show loading screen while fonts are loading or auth is being checked
+  if ((!fontsLoaded && !fontError) || authLoading) {
+    return <LoadingScreen message="Starting app..." />;
   }
 
   // Special handling for web platform to avoid hydration issues
@@ -128,29 +173,8 @@ function RootLayoutNav() {
     return <View style={{ flex: 1 }} />;
   }
 
-  return (
-    <>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </>
-  );
-}
-
-// This is the root layout component that provides the auth context
-export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <RootLayoutNav />
-        </ErrorBoundary>
-      </ThemeProvider>
-    </AuthProvider>
-  );
+  // This Slot renders the current route
+  return <Slot />;
 }
 
 // A custom error boundary to catch any navigation errors

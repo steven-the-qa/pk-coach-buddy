@@ -1,17 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Image, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Auth from '../components/Auth';
 import { useTheme } from '../lib/ThemeContext';
+import { useAuth } from '../lib/AuthContext';
+import LoadingScreen from '../components/LoadingScreen';
 
 export default function AuthScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { loading, session } = useAuth();
+  const [isScreenMounted, setIsScreenMounted] = useState(false);
+  
+  // Mark component as mounted
+  useEffect(() => {
+    setIsScreenMounted(true);
+    return () => setIsScreenMounted(false);
+  }, []);
+  
+  // If already authenticated, redirect to tabs - but only after component is mounted
+  useEffect(() => {
+    if (isScreenMounted && !loading && session) {
+      // Small delay to ensure navigation is ready
+      const timer = setTimeout(() => {
+        router.replace('/(tabs)');
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isScreenMounted, session, loading, router]);
   
   const handleLogin = () => {
-    router.replace('/(tabs)');
+    // Small delay to ensure navigation system is ready
+    setTimeout(() => {
+      router.replace('/(tabs)');
+    }, 50);
   };
+  
+  // Show loading screen while checking auth
+  if (loading) {
+    return <LoadingScreen message="Checking login status..." />;
+  }
   
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

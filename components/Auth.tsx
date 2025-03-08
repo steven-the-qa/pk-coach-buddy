@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 import { logout } from '../lib/authUtils';
+import LoadingScreen from './LoadingScreen';
 
 type AuthProps = {
   onLogin?: () => void;
@@ -29,21 +30,37 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        onLogin?.();
+        
+        // Small delay before calling onLogin to ensure navigation is ready
+        setTimeout(() => {
+          onLogin?.();
+        }, 50);
       }
     } catch (error: any) {
       Alert.alert('Error', error.message);
-    } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
+    // Use the updated logout function with setLoading handler
     await logout({
       showConfirmation: true,
-      showSuccess: true
+      showSuccess: true,
+      setLoading: setLoading
     });
   };
+
+  // If loading, show the loading screen
+  if (loading) {
+    return <LoadingScreen message={
+      mode === 'logout' 
+        ? "Logging out..." 
+        : isSignUp 
+          ? "Creating account..." 
+          : "Signing in..."
+    } />;
+  }
 
   // If in logout mode, just show the logout button
   if (mode === 'logout') {
@@ -59,9 +76,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
           onPress={handleLogout}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
-            {loading ? 'Logging out...' : 'Log Out'}
-          </Text>
+          <Text style={styles.buttonText}>Log Out</Text>
         </TouchableOpacity>
       </View>
     );
@@ -104,7 +119,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
         disabled={loading}
       >
         <Text style={styles.buttonText}>
-          {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+          {isSignUp ? 'Sign Up' : 'Sign In'}
         </Text>
       </TouchableOpacity>
       

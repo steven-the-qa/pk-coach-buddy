@@ -11,20 +11,54 @@ export const logout = async (options?: {
   showConfirmation?: boolean;
   showSuccess?: boolean;
   redirectTo?: string;
+  setLoading?: (loading: boolean) => void; // Add loading state setter
 }): Promise<boolean> => {
   const {
     showConfirmation = true,
     showSuccess = false,
     redirectTo = '/auth',
+    setLoading,
   } = options || {};
 
   console.log(`AuthUtils: Logout called with options on ${Platform.OS}:`, { showConfirmation, showSuccess, redirectTo });
+
+  // Set loading state if provided
+  if (setLoading) {
+    setLoading(true);
+  }
 
   // Default success handler - just log and return
   const handleSuccess = async () => {
     console.log(`AuthUtils: Logout successful on ${Platform.OS}`);
     if (showSuccess && Platform.OS !== 'web') {
       Alert.alert("Success", "You have been logged out successfully");
+    }
+    
+    // Redirect after successful logout - type-safe with a delay
+    // and with platform-specific navigation handling
+    setTimeout(() => {
+      try {
+        if (redirectTo === '/auth' || redirectTo === '/(tabs)') {
+          router.replace(redirectTo);
+        } else {
+          // For any other paths, default to auth
+          router.replace('/auth');
+        }
+        console.log(`AuthUtils: Navigation completed to ${redirectTo}`);
+      } catch (navError) {
+        console.error(`AuthUtils: Navigation error on ${Platform.OS}:`, navError);
+        // Fallback navigation attempt if the first one fails
+        try {
+          router.replace('/auth');
+        } catch (fallbackError) {
+          console.error(`AuthUtils: Fallback navigation also failed:`, fallbackError);
+        }
+      }
+    }, 100); // Longer delay to ensure navigation container is ready
+    
+    // Reset loading state
+    if (setLoading) {
+      setLoading(false);
     }
     
     return true;
@@ -36,6 +70,12 @@ export const logout = async (options?: {
     if (Platform.OS !== 'web') {
       Alert.alert("Error", "There was a problem logging out. Please try again.");
     }
+    
+    // Reset loading state on error
+    if (setLoading) {
+      setLoading(false);
+    }
+    
     return false;
   };
 
@@ -63,6 +103,9 @@ export const logout = async (options?: {
     
     if (!confirmed) {
       console.log(`AuthUtils: Logout cancelled by user on ${Platform.OS}`);
+      if (setLoading) {
+        setLoading(false);
+      }
       return false;
     }
     
@@ -81,6 +124,9 @@ export const logout = async (options?: {
             style: "cancel",
             onPress: () => {
               console.log(`AuthUtils: Logout cancelled by user on ${Platform.OS}`);
+              if (setLoading) {
+                setLoading(false);
+              }
               resolve(false);
             }
           },
