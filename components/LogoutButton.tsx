@@ -48,22 +48,48 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
       
       console.log("LogoutButton: Logout result:", success);
       
-      // Even if logout "failed" (e.g., due to AuthSessionMissingError),
-      // we should still consider it a success from the user's perspective
-      // as they want to be logged out
+      // If logout failed and we're still logged in, try to force logout
+      if (!success) {
+        console.log("LogoutButton: First logout attempt failed, trying with force logout");
+        
+        // Give a small delay before retrying
+        setTimeout(async () => {
+          try {
+            const forceSuccess = await logout({
+              showConfirmation: false, // Skip confirmation on retry
+              redirectTo: '/auth',
+              setLoading: setIsLoggingOut,
+              forceLogout: true // Use the force logout option
+            });
+            
+            console.log("LogoutButton: Force logout result:", forceSuccess);
+          } catch (forceError) {
+            console.error("LogoutButton: Error during force logout:", forceError);
+          }
+        }, 500);
+      }
+      
+      // Callback for component that used this button
       if (onLogoutComplete) {
         onLogoutComplete();
       }
     } catch (error) {
       console.error("LogoutButton: Error during logout:", error);
-      // If an unhandled error occurs, manually redirect to auth
+      
+      // If an unhandled error occurs, try force logout
       try {
-        router.replace('/auth');
-      } catch (navError) {
-        console.error("LogoutButton: Navigation error:", navError);
+        console.log("LogoutButton: Trying force logout after error");
+        await logout({
+          showConfirmation: false,
+          redirectTo: '/auth',
+          setLoading: setIsLoggingOut,
+          forceLogout: true
+        });
+      } catch (forceError) {
+        console.error("LogoutButton: Force logout also failed:", forceError);
+        // Reset loading state in case of error
+        setIsLoggingOut(false);
       }
-      // Reset loading state in case of error
-      setIsLoggingOut(false);
     }
   };
 

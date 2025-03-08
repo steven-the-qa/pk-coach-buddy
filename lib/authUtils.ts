@@ -11,16 +11,18 @@ export const logout = async (options?: {
   showConfirmation?: boolean;
   showSuccess?: boolean;
   redirectTo?: string;
-  setLoading?: (loading: boolean) => void; // Add loading state setter
+  setLoading?: (loading: boolean) => void;
+  forceLogout?: boolean; // Add option to force logout even if network request fails
 }): Promise<boolean> => {
   const {
     showConfirmation = true,
     showSuccess = false,
     redirectTo = '/auth',
     setLoading,
+    forceLogout = false,
   } = options || {};
 
-  console.log(`AuthUtils: Logout called with options on ${Platform.OS}:`, { showConfirmation, showSuccess, redirectTo });
+  console.log(`AuthUtils: Logout called with options on ${Platform.OS}:`, { redirectTo, showConfirmation, showSuccess, forceLogout });
 
   // Set loading state if provided
   if (setLoading) {
@@ -55,7 +57,7 @@ export const logout = async (options?: {
         }
       }
     }, 100); // Longer delay to ensure navigation container is ready
-    
+
     // Reset loading state
     if (setLoading) {
       setLoading(false);
@@ -74,7 +76,55 @@ export const logout = async (options?: {
       console.log(`AuthUtils: User was already logged out (no session found)`);
       return handleSuccess(); // Proceed with navigation and success flow
     }
-    
+
+    // Handle network errors by offering to force logout
+    if (error.message && (
+        error.message.includes('Network request failed') || 
+        error.message.includes('network') ||
+        error.message.includes('offline'))
+    ) {
+      console.log(`AuthUtils: Network error during logout - ${forceLogout ? 'forcing logout' : 'showing alert'}`);
+      
+      // If force logout is enabled, proceed with the logout flow even though the network request failed
+      if (forceLogout) {
+        console.log(`AuthUtils: Forcing logout despite network error`);
+        return handleSuccess();
+      }
+
+      // Otherwise show an alert with the option to force logout
+      if (Platform.OS !== 'web') {
+        return new Promise<boolean>((resolve) => {
+          Alert.alert(
+            "Network Error",
+            "Cannot connect to authentication server. Would you like to force logout anyway?",
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => {
+                  console.log(`AuthUtils: Force logout cancelled`);
+                  if (setLoading) {
+                    setLoading(false);
+                  }
+                  resolve(false);
+                }
+              },
+              {
+                text: "Force Logout",
+                style: "destructive",
+                onPress: async () => {
+                  console.log(`AuthUtils: User chose to force logout`);
+                  resolve(await handleSuccess());
+                }
+              }
+            ],
+            { cancelable: false }
+          );
+        });
+      }
+    }
+
+    // Default error handling
     if (Platform.OS !== 'web') {
       Alert.alert("Error", "There was a problem logging out. Please try again.");
     }
@@ -83,7 +133,7 @@ export const logout = async (options?: {
     if (setLoading) {
       setLoading(false);
     }
-    
+
     return false;
   };
 
@@ -108,7 +158,7 @@ export const logout = async (options?: {
   if (Platform.OS === 'web' && showConfirmation) {
     const confirmed = window.confirm("Are you sure you want to log out?");
     console.log(`AuthUtils: Web confirmation result on ${Platform.OS}:`, confirmed);
-    
+
     if (!confirmed) {
       console.log(`AuthUtils: Logout cancelled by user on ${Platform.OS}`);
       if (setLoading) {
@@ -116,7 +166,7 @@ export const logout = async (options?: {
       }
       return false;
     }
-    
+
     // User confirmed logout on web
     return await performSignOut();
   } 
