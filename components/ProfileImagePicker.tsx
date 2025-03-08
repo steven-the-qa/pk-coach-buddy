@@ -7,6 +7,7 @@ import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
 import { supabase } from '../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 interface ProfileImagePickerProps {
   userId: string | undefined;
@@ -32,6 +33,7 @@ export default function ProfileImagePicker({
   gradientStyle
 }: ProfileImagePickerProps) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleProfileImagePress = () => {
     if (Platform.OS === 'ios') {
@@ -255,6 +257,11 @@ export default function ProfileImagePicker({
       onErrorChange(false);
       
       Alert.alert('Success', 'Profile picture updated successfully!');
+      
+      // Stay on settings tab after update
+      setTimeout(() => {
+        router.replace('/settings');
+      }, 100);
     } catch (error: any) {
       console.error('Error processing/uploading image:', error);
       Alert.alert('Error', 'Failed to update profile picture. Please try again.');
@@ -288,6 +295,11 @@ export default function ProfileImagePicker({
         onImageChange(null);
         onErrorChange(false);
         Alert.alert('Success', 'Profile picture removed successfully!');
+        
+        // Stay on settings tab after update
+        setTimeout(() => {
+          router.replace('/settings');
+        }, 100);
       } else {
         Alert.alert('Error', 'Failed to remove profile picture. Please try again.');
       }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { X } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
+import { useRouter } from 'expo-router';
 
 interface ProfileEditFormProps {
   username: string;
@@ -25,6 +26,7 @@ export default function ProfileEditForm({
   const [username, setUsername] = useState(initialUsername);
   const [email, setEmail] = useState(initialEmail);
   const [isUpdating, setIsUpdating] = useState(false);
+  const router = useRouter();
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -56,6 +58,11 @@ export default function ProfileEditForm({
         
         // Update the parent component
         onUpdateProfile(username, email);
+        
+        // Stay on settings tab after update
+        setTimeout(() => {
+          router.replace('/settings');
+        }, 100);
       }
     } catch (error: any) {
       console.error("Error in handleSaveProfile:", error);
