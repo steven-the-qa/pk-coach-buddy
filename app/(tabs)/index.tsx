@@ -60,7 +60,12 @@ export default function HomeScreen() {
       if (refreshedUser && refreshedUser.user_metadata && refreshedUser.user_metadata.avatar_url) {
         const avatarUrl = refreshedUser.user_metadata.avatar_url;
         console.log("Home: Setting profile image from metadata:", avatarUrl);
-        setProfileImage(avatarUrl);
+        
+        // Add a timestamp query parameter for cache busting
+        const imageUrlWithCacheBusting = `${avatarUrl}?t=${new Date().getTime()}`;
+        console.log("Home: Using cache-busted URL:", imageUrlWithCacheBusting);
+        
+        setProfileImage(imageUrlWithCacheBusting);
         setImageError(false);
       } else {
         // Default profile image if none set
@@ -115,11 +120,14 @@ export default function HomeScreen() {
             <Text style={[styles.name, { color: theme.text }]}>{firstName}</Text>
           </View>
           <TouchableOpacity style={styles.profileButton} onPress={navigateToSettings}>
-            {profileImage ? (
+            {profileImage && !imageError ? (
               <Image
                 source={{ uri: profileImage }}
                 style={styles.profileImage}
-                onError={() => setImageError(true)}
+                onError={() => {
+                  console.log("Home: Profile image loading error, switching to fallback");
+                  setImageError(true);
+                }}
               />
             ) : (
               <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
