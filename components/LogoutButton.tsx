@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { logout } from '../lib/authUtils';
 import { LogOut } from 'lucide-react-native';
-import { router } from 'expo-router';
 import { useAuth } from '../lib/AuthContext';
 
 type LogoutButtonProps = {

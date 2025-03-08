@@ -165,12 +165,11 @@ export default function SessionPlanForm({ onClose, onSave }: SessionPlanFormProp
               </View>
               
               <TextInput
-                style={styles.input}
+                style={[styles.input, { marginBottom: 8 }]}
                 value={activity.title}
                 onChangeText={(value) => handleActivityChange(index, 'title', value)}
                 placeholder="Activity title"
                 placeholderTextColor="#94A3B8"
-                marginBottom={8}
               />
               
               <TextInput

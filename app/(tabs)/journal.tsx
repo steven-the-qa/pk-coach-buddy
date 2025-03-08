@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Search, Filter, FileText, Brain } from 'lucide-react-native';
+import { Plus, Search, Filter, Brain } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 
 export default function JournalScreen() {

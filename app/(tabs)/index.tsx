@@ -8,9 +8,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-// Default avatar URL
-const DEFAULT_AVATAR_URL = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
-
 export default function HomeScreen() {
   const { theme, darkMode } = useTheme();
   const { user } = useAuth();

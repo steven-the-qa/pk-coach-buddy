@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
 import { useTheme } from '../../lib/ThemeContext';
-import { supabase } from '../../lib/supabase';
 import LogoutButton from '../../components/LogoutButton';
 import ProfileImagePicker from '../../components/ProfileImagePicker';
 import ProfileEditForm from '../../components/ProfileEditForm';

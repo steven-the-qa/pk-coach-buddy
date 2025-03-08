@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Alert, ActivityIndicator, Image, Platform, ActionSheetIOS } from 'react-native';
-import { User, Camera } from 'lucide-react-native';
+import { User } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
