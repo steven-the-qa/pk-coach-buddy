@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X } from 'lucide-react-native';
+import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X, Zap, Send } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 
 // Define interfaces for our data types
@@ -20,10 +20,17 @@ interface ArticleItem {
   image: string;
 }
 
-export default function KnowledgeScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { theme, darkMode } = useTheme();
+// Input modes enum
+enum InputMode {
+  SEARCH = 'search',
+  ASK = 'ask'
+}
 
+export default function KnowledgeScreen() {
+  const [inputMode, setInputMode] = useState<InputMode>(InputMode.SEARCH);
+  const [inputText, setInputText] = useState('');
+  const { theme, darkMode } = useTheme();
+  
   const categories: CategoryItem[] = [
     {
       id: '1',
@@ -47,7 +54,7 @@ export default function KnowledgeScreen() {
       color: darkMode ? '#7C2D12' : '#FFF7ED',
     },
   ];
-
+  
   const featuredArticles: ArticleItem[] = [
     {
       id: '1',
@@ -74,22 +81,24 @@ export default function KnowledgeScreen() {
     'Precision jump progressions',
     'ADAPT certification requirements',
   ];
-
+  
   // Initialize filtered state with the full arrays
   const [filteredCategories, setFilteredCategories] = useState<CategoryItem[]>(categories);
   const [filteredArticles, setFilteredArticles] = useState<ArticleItem[]>(featuredArticles);
   const [filteredSearches, setFilteredSearches] = useState<string[]>(recentSearches);
-
+  
   // Filter content based on search query
   useEffect(() => {
-    if (searchQuery.trim() === '') {
+    if (inputMode !== InputMode.SEARCH) return;
+    
+    if (inputText.trim() === '') {
       // If search is empty, show all items
       setFilteredCategories(categories);
       setFilteredArticles(featuredArticles);
       setFilteredSearches(recentSearches);
     } else {
-      const query = searchQuery.toLowerCase().trim();
-
+      const query = inputText.toLowerCase().trim();
+      
       // Filter categories by title and description
       const matchedCategories = categories.filter(
         category => 
@@ -103,23 +112,43 @@ export default function KnowledgeScreen() {
           article.title.toLowerCase().includes(query) || 
           article.description.toLowerCase().includes(query)
       );
-
+      
       // Filter recent searches
       const matchedSearches = recentSearches.filter(
         search => search.toLowerCase().includes(query)
       );
-
+      
       setFilteredCategories(matchedCategories);
       setFilteredArticles(matchedArticles);
       setFilteredSearches(matchedSearches);
     }
-  }, [searchQuery]);
-
-  // Clear search query
-  const clearSearch = () => setSearchQuery('');
-
+  }, [inputText, inputMode]);
+  
+  // Clear input
+  const clearInput = () => setInputText('');
+  
+  // Function to handle mode changes
+  const switchMode = (mode: InputMode) => {
+    setInputMode(mode);
+    setInputText('');
+  };
+  
+  // Function to handle AI question submission
+  const handleAskQuestion = () => {
+    if (inputText.trim() === '' || inputMode !== InputMode.ASK) return;
+    
+    // In a real implementation, you would send this question to your AI service
+    console.log('Question asked:', inputText);
+    
+    // For now, just clear the input
+    setInputText('');
+    
+    // You could also show a toast or feedback message
+    alert('Your question has been submitted to Buddy!');
+  };
+  
+  const isSearching = inputMode === InputMode.SEARCH && inputText.trim() !== '';
   const hasResults = filteredCategories.length > 0 || filteredArticles.length > 0 || filteredSearches.length > 0;
-  const isSearching = searchQuery.trim() !== '';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -130,44 +159,96 @@ export default function KnowledgeScreen() {
         </Text>
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
+      {/* Combined input with mode tabs */}
+      <View style={styles.inputContainer}>
+        {/* Mode selector tabs */}
+        <View style={styles.modeTabs}>
+          <TouchableOpacity 
+            style={[
+              styles.modeTab, 
+              inputMode === InputMode.SEARCH && styles.activeTab,
+              { borderColor: theme.border }
+            ]}
+            onPress={() => switchMode(InputMode.SEARCH)}
+          >
+            <Search size={16} color={inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText} />
+            <Text 
+              style={[
+                styles.modeTabText, 
+                { color: inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText }
+              ]}
+            >
+              Search
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.modeTab, 
+              inputMode === InputMode.ASK && styles.activeTab,
+              { borderColor: theme.border }
+            ]}
+            onPress={() => switchMode(InputMode.ASK)}
+          >
+            <Zap size={16} color={inputMode === InputMode.ASK ? theme.primary : theme.secondaryText} />
+            <Text 
+              style={[
+                styles.modeTabText, 
+                { color: inputMode === InputMode.ASK ? theme.primary : theme.secondaryText }
+              ]}
+            >
+              Ask Buddy
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Input field */}
+        <View style={[styles.inputField, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          {inputMode === InputMode.SEARCH ? (
+            <Search size={20} color={theme.secondaryText} style={styles.inputIcon} />
+          ) : (
+            <Zap size={20} color={theme.primary} style={styles.inputIcon} />
+          )}
+          
           <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Search knowledge base..."
+            style={[styles.textInput, { color: theme.text }]}
+            placeholder={
+              inputMode === InputMode.SEARCH 
+                ? "Search knowledge base..." 
+                : "Ask Buddy a question..."
+            }
             placeholderTextColor={theme.secondaryText}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            value={inputText}
+            onChangeText={setInputText}
+            multiline={inputMode === InputMode.ASK}
+            numberOfLines={inputMode === InputMode.ASK ? 2 : 1}
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={clearSearch}>
-              <X size={20} color={theme.secondaryText} />
-            </TouchableOpacity>
+          
+          {inputText.length > 0 && (
+            <>
+              <TouchableOpacity onPress={clearInput}>
+                <X size={20} color={theme.secondaryText} style={styles.clearIcon} />
+              </TouchableOpacity>
+              
+              {inputMode === InputMode.ASK && (
+                <TouchableOpacity 
+                  style={[styles.sendButton, { backgroundColor: theme.primary }]}
+                  onPress={handleAskQuestion}
+                >
+                  <Send size={18} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </View>
 
       <ScrollView style={styles.contentContainer}>
-        {!isSearching && (
-          <View style={styles.aiAssistantCard}>
-            <View style={styles.aiAssistantContent}>
-              <Text style={styles.aiAssistantTitle}>AI Coaching Assistant</Text>
-              <Text style={styles.aiAssistantDescription}>
-                Ask questions about parkour coaching, ADAPT principles, or get help with specific coaching challenges.
-              </Text>
-              <TouchableOpacity style={styles.aiAssistantButton}>
-                <Text style={styles.aiAssistantButtonText}>Ask a Question</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
         {/* No results message */}
         {isSearching && !hasResults && (
           <View style={styles.noResultsContainer}>
             <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
-              No results found for "{searchQuery}"
+              No results found for "{inputText}"
             </Text>
             <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
               Try different keywords or check your spelling
@@ -175,8 +256,23 @@ export default function KnowledgeScreen() {
           </View>
         )}
 
+        {/* AI explanation message when in ASK mode */}
+        {inputMode === InputMode.ASK && !isSearching && (
+          <View style={[styles.aiExplanationCard, { backgroundColor: theme.card }]}>
+            <Zap size={24} color={theme.primary} style={styles.aiExplanationIcon} />
+            <View style={styles.aiExplanationContent}>
+              <Text style={[styles.aiExplanationTitle, { color: theme.text }]}>
+                Buddy AI
+              </Text>
+              <Text style={[styles.aiExplanationText, { color: theme.secondaryText }]}>
+                What can I help you with?
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Conditionally render categories section */}
-        {filteredCategories.length > 0 && (
+        {(inputMode === InputMode.SEARCH || !isSearching) && filteredCategories.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               {isSearching ? 'Matching Categories' : 'Categories'}
@@ -204,7 +300,7 @@ export default function KnowledgeScreen() {
         )}
 
         {/* Conditionally render articles section */}
-        {filteredArticles.length > 0 && (
+        {(inputMode === InputMode.SEARCH || !isSearching) && filteredArticles.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
               {isSearching ? 'Matching Articles' : 'Featured Articles'}
@@ -229,7 +325,7 @@ export default function KnowledgeScreen() {
         )}
 
         {/* Conditionally render recent searches section */}
-        {filteredSearches.length > 0 && !isSearching && (
+        {inputMode === InputMode.SEARCH && filteredSearches.length > 0 && !isSearching && (
           <>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
             <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
@@ -271,31 +367,63 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
   },
-  searchContainer: {
+  inputContainer: {
     paddingHorizontal: 16,
     marginBottom: 16,
   },
-  searchBar: {
+  modeTabs: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  modeTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  activeTab: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderColor: 'rgba(59, 130, 246, 0.5)',
+  },
+  modeTabText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 13,
+    marginLeft: 6,
+  },
+  inputField: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingHorizontal: 12,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
   },
-  searchIcon: {
+  inputIcon: {
     marginRight: 8,
   },
-  searchInput: {
+  textInput: {
     flex: 1,
     fontFamily: 'Inter-Regular',
     fontSize: 16,
     color: '#0F172A',
     paddingVertical: 12,
+  },
+  clearIcon: {
+    marginLeft: 8,
+  },
+  sendButton: {
+    backgroundColor: '#3B82F6',
+    borderRadius: 8,
+    padding: 8,
+    marginLeft: 8,
   },
   contentContainer: {
     flex: 1,
@@ -318,49 +446,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  aiAssistantCard: {
-    backgroundColor: '#3B82F6',
+  // AI Explanation Card
+  aiExplanationCard: {
+    flexDirection: 'row',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
-    flexDirection: 'row',
   },
-  aiAssistantContent: {
+  aiExplanationIcon: {
+    marginRight: 16,
+  },
+  aiExplanationContent: {
     flex: 1,
   },
-  aiAssistantTitle: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 20,
-    color: '#FFFFFF',
+  aiExplanationTitle: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 18,
     marginBottom: 8,
   },
-  aiAssistantDescription: {
+  aiExplanationText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#DBEAFE',
-    marginBottom: 16,
+    lineHeight: 20,
   },
-  aiAssistantButton: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  aiAssistantButtonText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 14,
-    color: '#3B82F6',
-  },
-  aiAssistantIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 16,
-  },
+  // Original styles
   sectionTitle: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
