@@ -48,9 +48,12 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
       
       console.log("LogoutButton: Logout result:", success);
       
-      // If logout failed and we're still logged in, try to force logout
-      if (!success) {
-        console.log("LogoutButton: First logout attempt failed, trying with force logout");
+      // Only retry with force logout if there was a technical error, not if the user canceled
+      // success will be false both when there's an error and when the user cancels
+      // But in the cancellation case, the setIsLoggingOut is already reset by the logout function
+      if (!success && isLoggingOut) {
+        // If we're still in the logging out state, it indicates a technical failure rather than a user cancellation
+        console.log("LogoutButton: First logout attempt failed due to technical issue, trying with force logout");
         
         // Give a small delay before retrying
         setTimeout(async () => {
@@ -76,19 +79,25 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     } catch (error) {
       console.error("LogoutButton: Error during logout:", error);
       
-      // If an unhandled error occurs, try force logout
-      try {
-        console.log("LogoutButton: Trying force logout after error");
-        await logout({
-          showConfirmation: false,
-          redirectTo: '/auth',
-          setLoading: setIsLoggingOut,
-          forceLogout: true
-        });
-      } catch (forceError) {
-        console.error("LogoutButton: Force logout also failed:", forceError);
-        // Reset loading state in case of error
-        setIsLoggingOut(false);
+      // Only try force logout if we're still in the logging out state
+      // (to avoid forcing logout after user cancellation)
+      if (isLoggingOut) {
+        try {
+          console.log("LogoutButton: Trying force logout after error");
+          await logout({
+            showConfirmation: false,
+            redirectTo: '/auth',
+            setLoading: setIsLoggingOut,
+            forceLogout: true
+          });
+        } catch (forceError) {
+          console.error("LogoutButton: Force logout also failed:", forceError);
+          // Reset loading state in case of error
+          setIsLoggingOut(false);
+        }
+      } else {
+        // If not in logging out state anymore, it was likely a user cancellation
+        console.log("LogoutButton: Not attempting force logout, likely user canceled");
       }
     }
   };
