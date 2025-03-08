@@ -1,11 +1,110 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Brain, Calendar, FileText, Lightbulb } from 'lucide-react-native';
+import { Brain, Calendar, FileText, Lightbulb, User } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
+import { router, useFocusEffect } from 'expo-router';
+import { useAuth } from '../../lib/AuthContext';
+import { supabase } from '../../lib/supabase';
+
+// Default avatar URL
+const DEFAULT_AVATAR_URL = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
 
 export default function HomeScreen() {
   const { theme, darkMode } = useTheme();
+  const { user } = useAuth();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const [firstName, setFirstName] = useState('Coach');
+
+  // Refresh user data when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Home screen focused, refreshing user data");
+      fetchUserData();
+      return () => {
+        // Cleanup function if needed
+      };
+    }, [])
+  );
+
+  // Get user profile image from metadata when component mounts or user changes
+  useEffect(() => {
+    console.log("Home screen mounted or user changed");
+    fetchUserData();
+  }, [user]);
+
+  const fetchUserData = async () => {
+    if (!user) {
+      console.log("No user available, skipping data fetch");
+      return;
+    }
+    
+    try {
+      // Force a refresh of the user object to get the latest metadata
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.error("Error refreshing user data:", error);
+        return;
+      }
+      
+      const refreshedUser = data?.user;
+      
+      // Extract and set the first name
+      if (refreshedUser) {
+        setFirstName(getFirstName(refreshedUser));
+      }
+      
+      // Get profile image
+      if (refreshedUser && refreshedUser.user_metadata && refreshedUser.user_metadata.avatar_url) {
+        const avatarUrl = refreshedUser.user_metadata.avatar_url;
+        console.log("Home: Setting profile image from metadata:", avatarUrl);
+        setProfileImage(avatarUrl);
+        setImageError(false);
+      } else {
+        // Default profile image if none set
+        console.log("Home: No avatar_url found in metadata, using default");
+        setProfileImage(DEFAULT_AVATAR_URL);
+      }
+      
+      // Log the entire user metadata for debugging
+      console.log("Current user metadata:", refreshedUser?.user_metadata);
+    } catch (err) {
+      console.error("Error in fetchUserData:", err);
+    }
+  };
+
+  // Function to navigate to settings when profile image is clicked
+  const navigateToSettings = () => {
+    console.log("Navigating to settings screen");
+    router.navigate('/settings');
+  };
+
+  // Extract first name from user data
+  const getFirstName = (userData: any) => {
+    // First check if we have a username in metadata
+    if (userData?.user_metadata?.username) {
+      // Split the username by spaces and get the first part (first name)
+      const nameParts = userData.user_metadata.username.split(' ');
+      return nameParts[0];
+    }
+    
+    // If no username, try to use first part of email
+    if (userData?.email) {
+      const emailName = userData.email.split('@')[0];
+      // If the email username has dots or underscores, split by them to get a name-like part
+      if (emailName.includes('.') || emailName.includes('_')) {
+        const namePart = emailName.split(/[._]/)[0];
+        // Capitalize first letter
+        return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      }
+      return emailName;
+    }
+    
+    // Default fallback
+    return 'Coach';
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -13,13 +112,20 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.greeting, { color: theme.secondaryText }]}>Welcome back,</Text>
-            <Text style={[styles.name, { color: theme.text }]}>Coach</Text>
+            <Text style={[styles.name, { color: theme.text }]}>{firstName}</Text>
           </View>
-          <TouchableOpacity style={styles.profileButton}>
-            <Image
-              source={{ uri: 'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80' }}
-              style={styles.profileImage}
-            />
+          <TouchableOpacity style={styles.profileButton} onPress={navigateToSettings}>
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
+                <User size={24} color={darkMode ? '#9CA3AF' : '#6B7280'} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -266,5 +372,12 @@ const styles = StyleSheet.create({
   activityTime: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
+  },
+  fallbackProfileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

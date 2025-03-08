@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Alert, ActivityIndicator, Platform, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, LogOut } from 'lucide-react-native';
+import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, LogOut, X, Camera } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
 import { useTheme } from '../../lib/ThemeContext';
 import { router } from 'expo-router';
@@ -9,21 +9,86 @@ import { supabase } from '../../lib/supabase';
 import { logout } from '../../lib/authUtils';
 import LogoutButton from '../../components/LogoutButton';
 
-// Theme definitions moved to ThemeContext.tsx
+// Default avatar URL
+const DEFAULT_AVATAR_URL = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = React.useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const { user, signOut } = useAuth();
   
   // Use the shared theme context
   const { darkMode, setDarkMode, theme } = useTheme();
   
-  // Verify we have the auth context on mount
+  // Load user data when component mounts
   useEffect(() => {
     console.log("Settings Screen Mounted, Auth User:", user?.email);
     console.log("Auth Context signOut available:", typeof signOut === 'function');
+    
+    if (user) {
+      // Set initial values
+      setEmail(user.email || '');
+      setUsername(user.user_metadata?.username || '');
+      
+      // Set profile image
+      if (user.user_metadata?.avatar_url) {
+        setProfileImage(user.user_metadata.avatar_url);
+      } else {
+        setProfileImage(DEFAULT_AVATAR_URL);
+      }
+    }
   }, [user]);
+
+  // Handle opening the edit modal
+  const handleEditPress = () => {
+    setEditModalVisible(true);
+  };
+  
+  // Handle saving user profile changes
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setIsUpdating(true);
+    
+    try {
+      // Update user data in Supabase
+      const { error } = await supabase.auth.updateUser({
+        email: email !== user.email ? email : undefined,
+        data: { username }
+      });
+      
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Success', 'Profile updated successfully!');
+        setEditModalVisible(false);
+        
+        // Refresh user data
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          // Update local state if needed
+          setUsername(data.user.user_metadata?.username || '');
+          setEmail(data.user.email || '');
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'An error occurred');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Navigate to the profile image picker in settings
+  const handleProfileImagePress = () => {
+    // Just navigate to current settings page for now
+    console.log("Profile image pressed");
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -33,15 +98,40 @@ export default function SettingsScreen() {
 
       <ScrollView style={styles.contentContainer}>
         <View style={[styles.profileSection, { backgroundColor: theme.card }]}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80' }}
-            style={styles.profileImage}
-          />
+          <TouchableOpacity
+            style={styles.profileImageContainer}
+            onPress={handleProfileImagePress}
+          >
+            {profileImage && !imageError ? (
+              <>
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.profileImage}
+                  onError={() => setImageError(true)}
+                />
+                <View style={styles.cameraIconOverlay}>
+                  <Camera size={16} color="#fff" />
+                </View>
+              </>
+            ) : (
+              <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
+                <User size={32} color={darkMode ? '#9CA3AF' : '#6B7280'} />
+              </View>
+            )}
+          </TouchableOpacity>
+          
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: theme.text }]}>{user?.email ? user.email.split('@')[0] : 'User'}</Text>
-            <Text style={[styles.profileEmail, { color: theme.secondaryText }]}>{user?.email || 'user@example.com'}</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>
+              {user?.user_metadata?.username || (user?.email ? user.email.split('@')[0] : 'User')}
+            </Text>
+            <Text style={[styles.profileEmail, { color: theme.secondaryText }]}>
+              {user?.email || 'user@example.com'}
+            </Text>
           </View>
-          <TouchableOpacity style={[styles.editButton, { borderColor: theme.buttonBorder }]}>
+          <TouchableOpacity 
+            style={[styles.editButton, { borderColor: theme.buttonBorder }]}
+            onPress={handleEditPress}
+          >
             <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
           </TouchableOpacity>
         </View>
@@ -131,6 +221,69 @@ export default function SettingsScreen() {
           <Text style={[styles.appVersion, { color: theme.secondaryText }]}>PK Coach Buddy v1.0.0</Text>
           <Text style={[styles.appCopyright, { color: theme.tertiaryText }]}>© 2025 ADAPT Parkour</Text>
         </View>
+
+        {/* Edit Profile Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={editModalVisible}
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>Edit Profile</Text>
+                <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                  <X size={24} color={theme.text} />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.secondaryText }]}>Name</Text>
+                <TextInput
+                  style={[styles.input, { 
+                    color: theme.text,
+                    backgroundColor: darkMode ? '#1F2937' : '#F9FAFB',
+                    borderColor: theme.border
+                  }]}
+                  value={username}
+                  onChangeText={setUsername}
+                  placeholder="Your name"
+                  placeholderTextColor={theme.tertiaryText}
+                />
+              </View>
+              
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: theme.secondaryText }]}>Email</Text>
+                <TextInput
+                  style={[styles.input, { 
+                    color: theme.text,
+                    backgroundColor: darkMode ? '#1F2937' : '#F9FAFB',
+                    borderColor: theme.border
+                  }]}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Your email"
+                  placeholderTextColor={theme.tertiaryText}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+              
+              <TouchableOpacity 
+                style={[styles.saveButton, { backgroundColor: isUpdating ? '#60A5FA' : '#3B82F6' }]}
+                onPress={handleSaveProfile}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -156,7 +309,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   profileSection: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     // backgroundColor is now applied dynamically
     borderRadius: 12,
@@ -168,14 +321,39 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  profileImageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: 12,
+  },
   profileImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: '100%',
+    height: '100%',
+  },
+  fallbackProfileImage: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIconOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#0284c7',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileInfo: {
-    flex: 1,
-    marginLeft: 16,
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 16,
   },
   profileName: {
     fontFamily: 'Inter-SemiBold',
@@ -189,8 +367,8 @@ const styles = StyleSheet.create({
     // color is now applied dynamically
   },
   editButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 6,
     borderWidth: 1,
     // borderColor is now applied dynamically
@@ -259,5 +437,62 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 12,
     // color is now applied dynamically
+  },
+  
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 20,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  input: {
+    fontFamily: 'Inter-Regular',
+    height: 48,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+  },
+  saveButton: {
+    height: 48,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  saveButtonText: {
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+    fontSize: 16,
   },
 });
