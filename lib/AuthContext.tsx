@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut: async () => {
       console.log("AuthContext: signOut method called");
       try {
-        // Clear any local state first
+        // Clear local state first
         setUser(null);
         setSession(null);
         
@@ -61,6 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signOut();
         
         if (error) {
+          // Special handling for AuthSessionMissingError
+          if (error.message && error.message.includes('Auth session missing')) {
+            // User is already signed out, which is what we wanted
+            console.log("AuthContext: User was already signed out");
+            return { error: null };
+          }
+          
           console.error("AuthContext: Error during signOut:", error);
           return { error };
         }

@@ -137,6 +137,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   logoutContainer: {
+    width: '100%',
     padding: 20,
     alignItems: 'center',
     borderRadius: 10,
@@ -162,31 +164,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
+    width: '100%',
     borderRadius: 5,
-    padding: 10,
+    padding: 15,
     marginBottom: 15,
+    fontSize: 16,
   },
   button: {
+    width: '100%',
     borderRadius: 5,
-    padding: 12,
+    padding: 15,
     alignItems: 'center',
   },
   logoutButton: {
     backgroundColor: '#f44336',
     borderRadius: 5,
-    padding: 12,
+    padding: 15,
     alignItems: 'center',
-    minWidth: 150,
+    width: '100%',
+    maxWidth: 200,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   switchButton: {
     marginTop: 15,
     alignItems: 'center',
   },
   switchText: {
+    fontSize: 14,
   },
   userInfo: {
     marginBottom: 15,

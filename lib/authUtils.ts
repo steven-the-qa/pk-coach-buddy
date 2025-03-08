@@ -67,6 +67,14 @@ export const logout = async (options?: {
   // Default error handler
   const handleError = (error: any) => {
     console.error(`AuthUtils: Logout error on ${Platform.OS}:`, error);
+    
+    // Check for AuthSessionMissingError, which means the user is already logged out
+    // We should treat this as a successful logout
+    if (error.message && error.message.includes('Auth session missing')) {
+      console.log(`AuthUtils: User was already logged out (no session found)`);
+      return handleSuccess(); // Proceed with navigation and success flow
+    }
+    
     if (Platform.OS !== 'web') {
       Alert.alert("Error", "There was a problem logging out. Please try again.");
     }

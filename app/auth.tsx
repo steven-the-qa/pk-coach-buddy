@@ -46,17 +46,19 @@ export default function AuthScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1551524559-8af4e6624178?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80' }} 
-            style={styles.logo}
-          />
-          <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
-          <Text style={[styles.tagline, { color: theme.secondaryText }]}>AI-Powered Parkour Coaching</Text>
+      <View style={styles.contentWrapper}>
+        <View style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../assets/images/login_logo.jpg')} 
+              style={styles.logo}
+            />
+            <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
+            <Text style={[styles.tagline, { color: theme.secondaryText }]}>Overcome Coaching Obstacles</Text>
+          </View>
+          
+          <Auth onLogin={handleLogin} />
         </View>
-        
-        <Auth onLogin={handleLogin} />
       </View>
     </SafeAreaView>
   );
@@ -67,8 +69,14 @@ const styles = StyleSheet.create({
     flex: 1,
     // backgroundColor applied dynamically
   },
-  content: {
+  contentWrapper: {
     flex: 1,
+    alignItems: 'center', // Center horizontally
+    justifyContent: 'center', // Center vertically
+  },
+  content: {
+    width: '100%',
+    maxWidth: 450, // Maximum width for the form
     padding: 20,
     justifyContent: 'center',
   },

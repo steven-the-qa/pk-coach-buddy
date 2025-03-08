@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Platform } from 
 import { logout } from '../lib/authUtils';
 import { LogOut } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useAuth } from '../lib/AuthContext';
 
 type LogoutButtonProps = {
   variant?: 'text' | 'icon' | 'contained';
@@ -24,12 +25,14 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   style
 }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     // If already in loading state, prevent multiple clicks
     if (isLoggingOut) return;
     
     console.log("LogoutButton: Starting logout process");
+    console.log(`LogoutButton: Current user: ${user?.email || 'Not logged in'}`);
     setIsLoggingOut(true);
     
     try {
@@ -45,12 +48,20 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
       
       console.log("LogoutButton: Logout result:", success);
       
-      if (success && onLogoutComplete) {
-        // Only call completion handler, let logout handle the navigation
+      // Even if logout "failed" (e.g., due to AuthSessionMissingError),
+      // we should still consider it a success from the user's perspective
+      // as they want to be logged out
+      if (onLogoutComplete) {
         onLogoutComplete();
       }
     } catch (error) {
       console.error("LogoutButton: Error during logout:", error);
+      // If an unhandled error occurs, manually redirect to auth
+      try {
+        router.replace('/auth');
+      } catch (navError) {
+        console.error("LogoutButton: Navigation error:", navError);
+      }
       // Reset loading state in case of error
       setIsLoggingOut(false);
     }
