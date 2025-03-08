@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Search, Filter, Clock, Users, Brain } from 'lucide-react-native';
+import { Plus, Search, Filter, Clock, Users, Brain, Bot, Zap } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
+
+// Define the Session type
+interface Session {
+  id: string;
+  title: string;
+  date: string;
+  duration: string;
+  participants: string;
+  isAiGenerated: boolean;
+}
 
 export default function SessionsScreen() {
   const { theme, darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [showAiGeneratedOnly, setShowAiGeneratedOnly] = useState(false);
+  const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
   
   const upcomingSessions = [
     {
@@ -63,7 +75,29 @@ export default function SessionsScreen() {
     },
   ];
 
-  const sessions = activeTab === 'upcoming' ? upcomingSessions : pastSessions;
+  // Filter sessions based on search query and AI filter
+  useEffect(() => {
+    const sessions = activeTab === 'upcoming' ? upcomingSessions : pastSessions;
+    
+    let filtered = sessions;
+    
+    // Filter by search query
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(session => 
+        session.title.toLowerCase().includes(query) ||
+        session.date.toLowerCase().includes(query) ||
+        session.participants.toLowerCase().includes(query)
+      );
+    }
+    
+    // Filter by AI-generated
+    if (showAiGeneratedOnly) {
+      filtered = filtered.filter(session => session.isAiGenerated);
+    }
+    
+    setFilteredSessions(filtered);
+  }, [searchQuery, activeTab, showAiGeneratedOnly]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -75,18 +109,28 @@ export default function SessionsScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={20} color="#64748B" style={styles.searchIcon} />
+        <View style={[styles.searchBar, { backgroundColor: theme.card }]}>
+          <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.text }]}
             placeholder="Search sessions"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={theme.tertiaryText || "#94A3B8"}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#64748B" />
+        <TouchableOpacity 
+          style={[
+            styles.filterButton, 
+            { backgroundColor: theme.card },
+            showAiGeneratedOnly && { backgroundColor: theme.primary }
+          ]}
+          onPress={() => setShowAiGeneratedOnly(!showAiGeneratedOnly)}
+        >
+          <Zap 
+            size={20} 
+            color={showAiGeneratedOnly ? "#FFFFFF" : theme.secondaryText} 
+          />
         </TouchableOpacity>
       </View>
 
@@ -120,52 +164,55 @@ export default function SessionsScreen() {
       </View>
 
       <ScrollView style={styles.sessionsContainer}>
-        {sessions.map((session) => (
-          <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.card }]}>
-            <View style={styles.sessionHeader}>
-              <Text style={[styles.sessionDate, { color: theme.secondaryText }]}>{session.date}</Text>
-              {session.isAiGenerated && (
-                <View style={[styles.aiGeneratedTag, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
-                  <Brain size={14} color={darkMode ? '#93C5FD' : '#3B82F6'} style={styles.aiIcon} />
-                  <Text style={[styles.aiGeneratedText, { color: darkMode ? '#93C5FD' : '#3B82F6' }]}>AI Generated</Text>
+        {filteredSessions.length > 0 ? (
+          filteredSessions.map((session) => (
+            <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.card }]}>
+              <View style={styles.sessionHeader}>
+                <Text style={[styles.sessionDate, { color: theme.secondaryText }]}>{session.date}</Text>
+                {session.isAiGenerated && (
+                  <View style={[styles.aiGeneratedTag, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
+                    <Zap size={14} color={darkMode ? '#93C5FD' : '#3B82F6'} style={styles.aiIcon} />
+                    <Text style={[styles.aiGeneratedText, { color: darkMode ? '#93C5FD' : '#3B82F6' }]}>AI Generated</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.sessionTitle, { color: theme.text }]}>{session.title}</Text>
+              <View style={styles.sessionDetails}>
+                <View style={[styles.detailItem, { borderColor: theme.border }]}>
+                  <Clock size={16} color={theme.secondaryText} style={styles.detailIcon} />
+                  <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.duration}</Text>
                 </View>
+                <View style={[styles.detailItem, { borderColor: theme.border }]}>
+                  <Users size={16} color={theme.secondaryText} style={styles.detailIcon} />
+                  <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.participants}</Text>
+                </View>
+              </View>
+              {activeTab === 'upcoming' ? (
+                <View style={[styles.actionButtons, { borderColor: theme.border }]}>
+                  <TouchableOpacity style={[styles.editButton, { borderColor: theme.border }]}>
+                    <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.startButton, { backgroundColor: theme.primary }]}>
+                    <Text style={[styles.startButtonText, { color: "#FFFFFF" }]}>Start Session</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={[styles.viewButton, { borderColor: theme.border }]}>
+                  <Text style={[styles.viewButtonText, { color: theme.secondaryText }]}>View Details</Text>
+                </TouchableOpacity>
               )}
-            </View>
-            <Text style={[styles.sessionTitle, { color: theme.text }]}>{session.title}</Text>
-            <View style={styles.sessionDetails}>
-              <View style={[styles.detailItem, { borderColor: theme.border }]}>
-                <Clock size={16} color={theme.secondaryText} style={styles.detailIcon} />
-                <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.duration}</Text>
-              </View>
-              <View style={[styles.detailItem, { borderColor: theme.border }]}>
-                <Users size={16} color={theme.secondaryText} style={styles.detailIcon} />
-                <Text style={[styles.detailText, { color: theme.secondaryText }]}>{session.participants}</Text>
-              </View>
-            </View>
-            {activeTab === 'upcoming' ? (
-              <View style={[styles.actionButtons, { borderColor: theme.border }]}>
-                <TouchableOpacity style={[styles.editButton, { borderColor: theme.border }]}>
-                  <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.startButton, { backgroundColor: theme.primary }]}>
-                  <Text style={[styles.startButtonText, { color: theme.text }]}>Start Session</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity style={[styles.viewButton, { borderColor: theme.border }]}>
-                <Text style={[styles.viewButtonText, { color: theme.secondaryText }]}>View Details</Text>
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.emptyStateContainer}>
+            <Text style={[styles.emptyStateText, { color: theme.secondaryText }]}>
+              {showAiGeneratedOnly 
+                ? "No AI-generated sessions found" 
+                : "No sessions match your search"}
+            </Text>
+          </View>
+        )}
       </ScrollView>
-
-      <View style={styles.fabContainer}>
-        <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]}>
-          <Plus size={24} color="#FFFFFF" />
-          <Text style={[styles.fabText, { color: theme.text }]}>New Session</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -365,28 +412,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     fontSize: 14,
   },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-  },
-  fab: {
-    flexDirection: 'row',
-    backgroundColor: '#3B82F6',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 28,
+  emptyStateContainer: {
+    padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    justifyContent: 'center',
   },
-  fabText: {
-    fontFamily: 'Inter-SemiBold',
+  emptyStateText: {
+    fontFamily: 'Inter-Medium',
     fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: 8,
+    textAlign: 'center',
   },
 });
