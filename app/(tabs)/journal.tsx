@@ -1,20 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Search, Filter, Brain } from 'lucide-react-native';
+import { Plus, Search, Zap } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
+
+// Define interface for journal entries
+interface JournalEntry {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  isAiAnalyzed: boolean;
+}
 
 export default function JournalScreen() {
   const { theme, darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
+  const [showAiAnalyzedOnly, setShowAiAnalyzedOnly] = useState(false);
+
   // Add handler for new journal entry button
   const handleAddEntry = () => {
     // Placeholder function for adding a new journal entry
     alert("Add new journal entry feature coming soon!");
   };
-  
-  const journalEntries = [
+
+  const journalEntries: JournalEntry[] = [
     {
       id: '1',
       date: 'May 12, 2023',
@@ -37,7 +48,37 @@ export default function JournalScreen() {
       isAiAnalyzed: true,
     },
   ];
-  
+
+  // Toggle AI analyzed filter
+  const toggleAiFilter = () => {
+    setShowAiAnalyzedOnly(!showAiAnalyzedOnly);
+  };
+
+  // Filter entries based on search query and AI filter
+  useEffect(() => {
+    let filtered = [...journalEntries];
+
+    // Filter by search query
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(entry => 
+        entry.title.toLowerCase().includes(query) || 
+        entry.content.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by AI-analyzed
+    if (showAiAnalyzedOnly) {
+      filtered = filtered.filter(entry => entry.isAiAnalyzed);
+    }
+
+    setFilteredEntries(filtered);
+  }, [searchQuery, showAiAnalyzedOnly]);
+
+  // Check if there are any search results
+  const hasSearchResults = filteredEntries.length > 0;
+  const isSearching = searchQuery.trim() !== '';
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
@@ -49,36 +90,75 @@ export default function JournalScreen() {
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.searchContainer}>
         <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Search journal entries"
+            placeholder="Search journal entries..."
             placeholderTextColor={theme.secondaryText}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            autoCapitalize="none"
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <View style={styles.clearButtonContainer}>
+                <Text style={styles.clearButton}>✕</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Filter size={20} color={theme.secondaryText} />
+        <TouchableOpacity 
+          style={[
+            styles.filterButton, 
+            { 
+              backgroundColor: showAiAnalyzedOnly ? '#3B82F6' : theme.card,
+              borderColor: showAiAnalyzedOnly ? '#3B82F6' : theme.border 
+            }
+          ]}
+          onPress={toggleAiFilter}
+        >
+          <Zap size={20} color={showAiAnalyzedOnly ? '#FFFFFF' : theme.secondaryText} />
         </TouchableOpacity>
       </View>
-      
+
       <ScrollView style={styles.entriesContainer}>
-        {journalEntries.map((entry) => (
+        {isSearching && !hasSearchResults && (
+          <View style={styles.noResultsContainer}>
+            <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
+              No entries found for "{searchQuery}"
+            </Text>
+            <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
+              Try different keywords or check your spelling
+            </Text>
+          </View>
+        )}
+
+        {!isSearching && showAiAnalyzedOnly && filteredEntries.length === 0 && (
+          <View style={styles.noResultsContainer}>
+            <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
+              No AI analyzed entries found
+            </Text>
+            <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
+              Turn off the AI filter to see all entries
+            </Text>
+          </View>
+        )}
+
+        {filteredEntries.map((entry) => (
           <TouchableOpacity key={entry.id} style={[styles.entryCard, { backgroundColor: theme.card }]}>
             <View style={styles.entryHeader}>
               <Text style={[styles.entryDate, { color: theme.secondaryText }]}>{entry.date}</Text>
               {entry.isAiAnalyzed && (
-                <View style={[styles.aiTag, { backgroundColor: darkMode ? '#312E81' : '#F5F3FF' }]}>
-                  <Brain size={14} color={darkMode ? '#A5B4FC' : '#8B5CF6'} style={styles.aiIcon} />
-                  <Text style={[styles.aiText, { color: darkMode ? '#A5B4FC' : '#8B5CF6' }]}>AI Analyzed</Text>
+                <View style={styles.aiTag}>
+                  <Zap size={14} color="#FFFFFF" style={styles.aiIcon} />
+                  <Text style={styles.aiText}>AI Analyzed</Text>
                 </View>
               )}
             </View>
-            
+
             <Text style={[styles.entryTitle, { color: theme.text }]}>{entry.title}</Text>
             <Text style={[styles.entrySummary, { color: theme.secondaryText }]} numberOfLines={3}>
               {entry.content}
@@ -86,16 +166,6 @@ export default function JournalScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      
-      <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={[styles.fab, { backgroundColor: theme.primary }]}
-          onPress={handleAddEntry}
-        >
-          <Plus size={24} color="#FFFFFF" />
-          <Text style={styles.fabText}>New Entry</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -147,6 +217,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 4,
   },
+  clearButtonContainer: {
+    padding: 4,
+  },
+  clearButton: {
+    fontSize: 16,
+    color: '#999',
+    fontWeight: 'bold',
+  },
   filterButton: {
     width: 44,
     height: 44,
@@ -158,6 +236,22 @@ const styles = StyleSheet.create({
   entriesContainer: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  noResultsText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 18,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noResultsSubtext: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    textAlign: 'center',
   },
   entryCard: {
     borderRadius: 12,
@@ -185,6 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 16,
+    backgroundColor: '#3B82F6',
   },
   aiIcon: {
     marginRight: 4,
@@ -192,6 +287,7 @@ const styles = StyleSheet.create({
   aiText: {
     fontFamily: 'Inter-Medium',
     fontSize: 12,
+    color: '#FFFFFF',
   },
   entryTitle: {
     fontFamily: 'Inter-SemiBold',
@@ -202,28 +298,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
     lineHeight: 20,
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-  },
-  fab: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 28,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  fabText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: 8,
   },
 });

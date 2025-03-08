@@ -235,6 +235,7 @@ export default function KnowledgeScreen() {
             onChangeText={setInputText}
             multiline={inputMode === InputMode.ASK}
             numberOfLines={inputMode === InputMode.ASK ? 2 : 1}
+            autoCapitalize="none"
           />
           
           {inputText.length > 0 && (

@@ -118,15 +118,23 @@ export default function SessionsScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: theme.card }]}>
+        <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Search size={20} color={theme.secondaryText} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Search sessions"
-            placeholderTextColor={theme.tertiaryText || "#94A3B8"}
+            placeholder="Search sessions..."
+            placeholderTextColor={theme.secondaryText}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            autoCapitalize="none"
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <View style={styles.clearButtonContainer}>
+                <Text style={styles.clearButton}>✕</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
         <TouchableOpacity 
           style={[
@@ -430,5 +438,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     fontSize: 16,
     textAlign: 'center',
+  },
+  clearButtonContainer: {
+    padding: 4,
+  },
+  clearButton: {
+    fontSize: 16,
+    color: '#999',
+    fontWeight: 'bold',
   },
 });
