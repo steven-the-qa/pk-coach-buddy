@@ -99,11 +99,20 @@ export default function SessionsScreen() {
     setFilteredSessions(filtered);
   }, [searchQuery, activeTab, showAiGeneratedOnly]);
 
+  // Add handler for new session button
+  const handleAddSession = () => {
+    // Placeholder function for adding a new session
+    alert("Add new session feature coming soon!");
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Coaching Sessions</Text>
-        <TouchableOpacity style={styles.newButton}>
+        <TouchableOpacity 
+          style={styles.newButton}
+          onPress={handleAddSession}
+        >
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

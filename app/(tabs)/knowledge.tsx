@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X, Zap, Send } from 'lucide-react-native';
+import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X, Zap, Send, Plus } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 
 // Define interfaces for our data types
@@ -150,13 +150,26 @@ export default function KnowledgeScreen() {
   const isSearching = inputMode === InputMode.SEARCH && inputText.trim() !== '';
   const hasResults = filteredCategories.length > 0 || filteredArticles.length > 0 || filteredSearches.length > 0;
 
+  const handleAddArticle = () => {
+    // Placeholder function for adding a new article
+    alert("Add new article feature coming soon!");
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>Knowledge Base</Text>
-        <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-          Reference materials and coaching resources
-        </Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={[styles.title, { color: theme.text }]}>Knowledge Base</Text>
+          <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+            Reference materials and coaching resources
+          </Text>
+        </View>
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: theme.primary }]} 
+          onPress={handleAddArticle}
+        >
+          <Plus size={24} color="white" />
+        </TouchableOpacity>
       </View>
 
       {/* Combined input with mode tabs */}
@@ -358,6 +371,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   title: {
     fontFamily: 'Inter-Bold',
@@ -571,5 +590,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 16,
     color: '#334155',
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
   },
 });

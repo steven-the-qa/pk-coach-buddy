@@ -8,6 +8,12 @@ export default function JournalScreen() {
   const { theme, darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Add handler for new journal entry button
+  const handleAddEntry = () => {
+    // Placeholder function for adding a new journal entry
+    alert("Add new journal entry feature coming soon!");
+  };
+  
   const journalEntries = [
     {
       id: '1',
@@ -36,7 +42,10 @@ export default function JournalScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Coaching Journal</Text>
-        <TouchableOpacity style={[styles.newButton, { backgroundColor: theme.primary }]}>
+        <TouchableOpacity 
+          style={[styles.newButton, { backgroundColor: theme.primary }]}
+          onPress={handleAddEntry}
+        >
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
@@ -79,7 +88,10 @@ export default function JournalScreen() {
       </ScrollView>
       
       <View style={styles.fabContainer}>
-        <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]}>
+        <TouchableOpacity 
+          style={[styles.fab, { backgroundColor: theme.primary }]}
+          onPress={handleAddEntry}
+        >
           <Plus size={24} color="#FFFFFF" />
           <Text style={styles.fabText}>New Entry</Text>
         </TouchableOpacity>
