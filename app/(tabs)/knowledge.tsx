@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight } from 'lucide-react-native';
+import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
+
+// Define interfaces for our data types
+interface CategoryItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+interface ArticleItem {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+}
 
 export default function KnowledgeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { theme, darkMode } = useTheme();
-  
-  const categories = [
+
+  const categories: CategoryItem[] = [
     {
       id: '1',
       title: 'ADAPT Coaching Principles',
@@ -31,8 +47,8 @@ export default function KnowledgeScreen() {
       color: darkMode ? '#7C2D12' : '#FFF7ED',
     },
   ];
-  
-  const featuredArticles = [
+
+  const featuredArticles: ArticleItem[] = [
     {
       id: '1',
       title: 'Reflective Coaching Practice',
@@ -53,11 +69,57 @@ export default function KnowledgeScreen() {
     },
   ];
 
-  const recentSearches = [
+  const recentSearches: string[] = [
     'Coaching youth classes',
     'Precision jump progressions',
     'ADAPT certification requirements',
   ];
+
+  // Initialize filtered state with the full arrays
+  const [filteredCategories, setFilteredCategories] = useState<CategoryItem[]>(categories);
+  const [filteredArticles, setFilteredArticles] = useState<ArticleItem[]>(featuredArticles);
+  const [filteredSearches, setFilteredSearches] = useState<string[]>(recentSearches);
+
+  // Filter content based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      // If search is empty, show all items
+      setFilteredCategories(categories);
+      setFilteredArticles(featuredArticles);
+      setFilteredSearches(recentSearches);
+    } else {
+      const query = searchQuery.toLowerCase().trim();
+
+      // Filter categories by title and description
+      const matchedCategories = categories.filter(
+        category => 
+          category.title.toLowerCase().includes(query) || 
+          category.description.toLowerCase().includes(query)
+      );
+      
+      // Filter articles by title and description
+      const matchedArticles = featuredArticles.filter(
+        article => 
+          article.title.toLowerCase().includes(query) || 
+          article.description.toLowerCase().includes(query)
+      );
+
+      // Filter recent searches
+      const matchedSearches = recentSearches.filter(
+        search => search.toLowerCase().includes(query)
+      );
+
+      setFilteredCategories(matchedCategories);
+      setFilteredArticles(matchedArticles);
+      setFilteredSearches(matchedSearches);
+    }
+  }, [searchQuery]);
+
+  // Clear search query
+  const clearSearch = () => setSearchQuery('');
+
+  const hasResults = filteredCategories.length > 0 || filteredArticles.length > 0 || filteredSearches.length > 0;
+  const isSearching = searchQuery.trim() !== '';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -78,77 +140,115 @@ export default function KnowledgeScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch}>
+              <X size={20} color={theme.secondaryText} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
       <ScrollView style={styles.contentContainer}>
-        <View style={styles.aiAssistantCard}>
-          <View style={styles.aiAssistantContent}>
-            <Text style={styles.aiAssistantTitle}>AI Coaching Assistant</Text>
-            <Text style={styles.aiAssistantDescription}>
-              Ask questions about parkour coaching, ADAPT principles, or get help with specific coaching challenges.
-            </Text>
-            <TouchableOpacity style={styles.aiAssistantButton}>
-              <Text style={styles.aiAssistantButtonText}>Ask a Question</Text>
-            </TouchableOpacity>
+        {!isSearching && (
+          <View style={styles.aiAssistantCard}>
+            <View style={styles.aiAssistantContent}>
+              <Text style={styles.aiAssistantTitle}>AI Coaching Assistant</Text>
+              <Text style={styles.aiAssistantDescription}>
+                Ask questions about parkour coaching, ADAPT principles, or get help with specific coaching challenges.
+              </Text>
+              <TouchableOpacity style={styles.aiAssistantButton}>
+                <Text style={styles.aiAssistantButtonText}>Ask a Question</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        )}
 
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Categories</Text>
-        <View style={styles.categoriesContainer}>
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={[styles.categoryCard, { backgroundColor: theme.card }]}
-            >
-              <View style={[styles.categoryIconContainer, { backgroundColor: category.color }]}>
-                {category.icon}
-              </View>
-              <View style={styles.categoryContent}>
-                <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
-                <Text style={[styles.categoryDescription, { color: theme.secondaryText }]}>
-                  {category.description}
-                </Text>
-              </View>
-              <ChevronRight size={20} color={theme.secondaryText} />
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* No results message */}
+        {isSearching && !hasResults && (
+          <View style={styles.noResultsContainer}>
+            <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
+              No results found for "{searchQuery}"
+            </Text>
+            <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
+              Try different keywords or check your spelling
+            </Text>
+          </View>
+        )}
 
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Featured Articles</Text>
-        <View style={styles.articlesContainer}>
-          {featuredArticles.map((article) => (
-            <TouchableOpacity key={article.id} style={[styles.articleCard, { backgroundColor: theme.card }]}>
-              <Image
-                source={{ uri: article.image }}
-                style={styles.articleImage}
-              />
-              <View style={styles.articleContent}>
-                <Text style={[styles.articleTitle, { color: theme.text }]}>{article.title}</Text>
-                <Text style={[styles.articleDescription, { color: theme.secondaryText }]}>
-                  {article.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Conditionally render categories section */}
+        {filteredCategories.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {isSearching ? 'Matching Categories' : 'Categories'}
+            </Text>
+            <View style={styles.categoriesContainer}>
+              {filteredCategories.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[styles.categoryCard, { backgroundColor: theme.card }]}
+                >
+                  <View style={[styles.categoryIconContainer, { backgroundColor: category.color }]}>
+                    {category.icon}
+                  </View>
+                  <View style={styles.categoryContent}>
+                    <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
+                    <Text style={[styles.categoryDescription, { color: theme.secondaryText }]}>
+                      {category.description}
+                    </Text>
+                  </View>
+                  <ChevronRight size={20} color={theme.secondaryText} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
 
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
-        <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
-          {recentSearches.map((search, index) => (
-            <TouchableOpacity 
-              key={index} 
-              style={[
-                styles.recentSearchItem, 
-                { borderBottomColor: theme.border },
-                index === recentSearches.length - 1 ? { borderBottomWidth: 0 } : {}
-              ]}
-            >
-              <Search size={18} color={theme.secondaryText} style={styles.recentSearchIcon} />
-              <Text style={[styles.recentSearchText, { color: theme.text }]}>{search}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Conditionally render articles section */}
+        {filteredArticles.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {isSearching ? 'Matching Articles' : 'Featured Articles'}
+            </Text>
+            <View style={styles.articlesContainer}>
+              {filteredArticles.map((article) => (
+                <TouchableOpacity key={article.id} style={[styles.articleCard, { backgroundColor: theme.card }]}>
+                  <Image
+                    source={{ uri: article.image }}
+                    style={styles.articleImage}
+                  />
+                  <View style={styles.articleContent}>
+                    <Text style={[styles.articleTitle, { color: theme.text }]}>{article.title}</Text>
+                    <Text style={[styles.articleDescription, { color: theme.secondaryText }]}>
+                      {article.description}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+
+        {/* Conditionally render recent searches section */}
+        {filteredSearches.length > 0 && !isSearching && (
+          <>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
+            <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
+              {filteredSearches.map((search, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={[
+                    styles.recentSearchItem, 
+                    { borderBottomColor: theme.border },
+                    index === filteredSearches.length - 1 ? { borderBottomWidth: 0 } : { borderBottomWidth: 1 }
+                  ]}
+                >
+                  <Search size={18} color={theme.secondaryText} style={styles.recentSearchIcon} />
+                  <Text style={[styles.recentSearchText, { color: theme.text }]}>{search}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -200,6 +300,23 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  // No results styles
+  noResultsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  noResultsText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 18,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noResultsSubtext: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    textAlign: 'center',
   },
   aiAssistantCard: {
     backgroundColor: '#3B82F6',
