@@ -23,7 +23,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     },
     {
       title: 'AI-Generated Session Plans',
-      description: 'Create structured training sessions based on ADAPT methodologies with the help of AI suggestions.',
+      description: 'Create structured coaching sessions based on ADAPT methodologies with the help of AI suggestions.',
       image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
     },
     {

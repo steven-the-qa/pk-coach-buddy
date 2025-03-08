@@ -152,10 +152,6 @@ export default function HomeScreen() {
               <Text style={styles.featuredButtonText}>Get Started</Text>
             </TouchableOpacity>
           </View>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1551524559-8af4e6624178?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80' }}
-            style={styles.featuredImage}
-          />
         </View>
 
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>

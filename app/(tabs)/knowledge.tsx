@@ -37,19 +37,19 @@ export default function KnowledgeScreen() {
       id: '1',
       title: 'Reflective Coaching Practice',
       description: 'How to use reflection to improve your coaching methodology',
-      image: 'https://images.unsplash.com/photo-1517438984742-1262db08379e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1569577976786-b530a0510682?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3',
     },
     {
       id: '2',
       title: 'Managing Fear in Students',
       description: 'Techniques to help students overcome fear barriers',
-      image: 'https://images.unsplash.com/photo-1517438476312-10d79c077509?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1569577976786-b530a0510682?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3',
     },
     {
       id: '3',
       title: 'Designing Effective Progressions',
       description: 'Creating skill progressions that build confidence',
-      image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1569577976786-b530a0510682?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3',
     },
   ];
 
@@ -91,9 +91,6 @@ export default function KnowledgeScreen() {
             <TouchableOpacity style={styles.aiAssistantButton}>
               <Text style={styles.aiAssistantButtonText}>Ask a Question</Text>
             </TouchableOpacity>
-          </View>
-          <View style={styles.aiAssistantIconContainer}>
-            <BookOpen size={48} color="#FFFFFF" />
           </View>
         </View>
 

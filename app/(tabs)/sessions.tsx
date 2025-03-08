@@ -68,7 +68,7 @@ export default function SessionsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>Training Sessions</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Coaching Sessions</Text>
         <TouchableOpacity style={styles.newButton}>
           <Plus size={24} color="#FFFFFF" />
         </TouchableOpacity>
