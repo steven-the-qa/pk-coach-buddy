@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, Calendar, FileText, Lightbulb, User } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../lib/ThemeContext';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/AuthContext';
@@ -70,7 +71,7 @@ export default function HomeScreen() {
       } else {
         // Default profile image if none set
         console.log("Home: No avatar_url found in metadata, using default");
-        setProfileImage(DEFAULT_AVATAR_URL);
+        setProfileImage(null); // Set to null to trigger gradient fallback
       }
       
       // Log the entire user metadata for debugging
@@ -130,8 +131,15 @@ export default function HomeScreen() {
                 }}
               />
             ) : (
-              <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
-                <User size={24} color={darkMode ? '#9CA3AF' : '#6B7280'} />
+              <View style={styles.fallbackProfileImage}>
+                <LinearGradient
+                  colors={darkMode ? ['#1E40AF', '#3B82F6'] : ['#DBEAFE', '#93C5FD']}
+                  style={styles.gradientBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <User size={24} color="#FFFFFF" />
+                </LinearGradient>
               </View>
             )}
           </TouchableOpacity>
@@ -384,6 +392,13 @@ const styles = StyleSheet.create({
   fallbackProfileImage: {
     width: 48,
     height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gradientBackground: {
+    width: '100%',
+    height: '100%',
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',

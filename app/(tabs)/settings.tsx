@@ -10,6 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Default avatar URL
 const DEFAULT_AVATAR_URL = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
@@ -45,7 +46,7 @@ export default function SettingsScreen() {
         setProfileImage(imageUrl);
         setImageError(false);
       } else {
-        setProfileImage(DEFAULT_AVATAR_URL);
+        setProfileImage(null); // Set to null to trigger gradient fallback
       }
     }
   }, [user]);
@@ -448,7 +449,7 @@ export default function SettingsScreen() {
       }
       
       // Reset the image to default
-      setProfileImage(DEFAULT_AVATAR_URL);
+      setProfileImage(null); // Set to null to trigger gradient fallback
       setImageError(false);
       
       Alert.alert('Success', 'Profile picture removed successfully');
@@ -461,7 +462,7 @@ export default function SettingsScreen() {
         console.log('Auth session missing error detected');
         
         // Still update the UI to show no profile image
-        setProfileImage(DEFAULT_AVATAR_URL);
+        setProfileImage(null); // Set to null to trigger gradient fallback
         setImageError(false);
         
         Alert.alert('Note', 'Your profile picture has been removed, but there was an authentication issue. Try logging out and back in if you see any strange behavior.');
@@ -526,8 +527,15 @@ export default function SettingsScreen() {
             disabled={loading}
           >
             {loading ? (
-              <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
-                <ActivityIndicator color={darkMode ? '#9CA3AF' : '#6B7280'} />
+              <View style={styles.fallbackProfileImage}>
+                <LinearGradient
+                  colors={darkMode ? ['#1E40AF', '#3B82F6'] : ['#DBEAFE', '#93C5FD']}
+                  style={styles.gradientBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <ActivityIndicator color="#FFFFFF" />
+                </LinearGradient>
               </View>
             ) : profileImage && !imageError ? (
               <>
@@ -542,13 +550,17 @@ export default function SettingsScreen() {
                     setImageError(true);
                   }}
                 />
-                <View style={styles.cameraIconOverlay}>
-                  <Camera size={16} color="#fff" />
-                </View>
               </>
             ) : (
-              <View style={[styles.fallbackProfileImage, { backgroundColor: darkMode ? '#374151' : '#E5E7EB' }]}>
-                <User size={32} color={darkMode ? '#9CA3AF' : '#6B7280'} />
+              <View style={styles.fallbackProfileImage}>
+                <LinearGradient
+                  colors={darkMode ? ['#1E40AF', '#3B82F6'] : ['#DBEAFE', '#93C5FD']}
+                  style={styles.gradientBackground}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <User size={32} color="#FFFFFF" />
+                </LinearGradient>
               </View>
             )}
           </TouchableOpacity>
@@ -772,17 +784,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cameraIconOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#0284c7',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   profileInfo: {
     alignItems: 'center',
     marginTop: 4,
@@ -927,5 +928,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     color: '#FFFFFF',
     fontSize: 16,
+  },
+  gradientBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
   },
 });
