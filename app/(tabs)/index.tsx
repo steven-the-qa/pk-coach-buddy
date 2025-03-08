@@ -142,18 +142,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.featuredCard}>
-          <View style={styles.featuredContent}>
-            <Text style={styles.featuredTitle}>AI-Powered Coaching</Text>
-            <Text style={styles.featuredDescription}>
-              Enhance your parkour coaching with AI-assisted reflections and session planning.
-            </Text>
-            <TouchableOpacity style={styles.featuredButton}>
-              <Text style={styles.featuredButtonText}>Get Started</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Actions</Text>
         <View style={styles.quickActions}>
           <TouchableOpacity style={[styles.actionCard, { backgroundColor: theme.card }]}>
