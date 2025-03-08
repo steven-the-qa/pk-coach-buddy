@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 import { logout } from '../lib/authUtils';
 import LoadingScreen from './LoadingScreen';
+import { Eye, EyeOff } from 'lucide-react-native';
+import { supabase } from '../lib/supabase';
 
 type AuthProps = {
   onLogin?: () => void;
@@ -14,8 +16,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(mode === 'signup');
   const { theme, darkMode } = useTheme();
+  const passwordInputRef = useRef<TextInput>(null);
 
   const { signIn, signUp, user } = useAuth();
 
@@ -42,6 +46,29 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Email Required', 'Please enter your email address to reset your password.');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      
+      if (error) throw error;
+      
+      Alert.alert(
+        'Password Reset Email Sent',
+        'Check your email for a link to reset your password. If it doesn\'t appear within a few minutes, check your spam folder.'
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     // Use the updated logout function with setLoading handler
     await logout({
@@ -49,6 +76,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
       showSuccess: true,
       setLoading: setLoading
     });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   // If loading, show the loading screen
@@ -99,19 +130,47 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        returnKeyType="next"
+        onSubmitEditing={() => passwordInputRef.current?.focus()}
+        blurOnSubmit={false}
       />
       
-      <TextInput
-        style={[styles.input, { 
-          backgroundColor: darkMode ? '#374151' : '#f5f5f5',
-          color: theme.text
-        }]}
-        placeholder="Password"
-        placeholderTextColor={theme.secondaryText}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          ref={passwordInputRef}
+          style={[styles.passwordInput, { 
+            backgroundColor: darkMode ? '#374151' : '#f5f5f5',
+            color: theme.text
+          }]}
+          placeholder="Password"
+          placeholderTextColor={theme.secondaryText}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          returnKeyType="done"
+          onSubmitEditing={handleAuth}
+        />
+        <TouchableOpacity 
+          style={styles.eyeIconContainer} 
+          onPress={togglePasswordVisibility}
+        >
+          {showPassword ? 
+            <EyeOff size={20} color={theme.secondaryText} /> : 
+            <Eye size={20} color={theme.secondaryText} />
+          }
+        </TouchableOpacity>
+      </View>
+      
+      {!isSignUp && (
+        <TouchableOpacity
+          onPress={handleForgotPassword}
+          style={styles.forgotPasswordButton}
+        >
+          <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
+            Forgot Password?
+          </Text>
+        </TouchableOpacity>
+      )}
       
       <TouchableOpacity 
         style={[styles.button, { backgroundColor: theme.primary }]}
@@ -170,6 +229,25 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 15,
+    position: 'relative',
+  },
+  passwordInput: {
+    flex: 1,
+    borderRadius: 5,
+    padding: 15,
+    fontSize: 16,
+  },
+  eyeIconContainer: {
+    position: 'absolute',
+    right: 15,
+    height: '100%',
+    justifyContent: 'center',
+  },
   button: {
     width: '100%',
     borderRadius: 5,
@@ -199,6 +277,13 @@ const styles = StyleSheet.create({
   userInfo: {
     marginBottom: 15,
     fontSize: 16,
+  },
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 15,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
   },
 });
 
