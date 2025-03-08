@@ -22,6 +22,13 @@ export default {
       output: "single",
       favicon: "./assets/images/favicon.png"
     },
+    android: {
+      package: "com.boutchersj.pkcoachbuddy",
+      versionCode: 1,
+      permissions: [
+        "android.permission.INTERNET"
+      ]
+    },
     plugins: [
       "expo-router"
     ],
