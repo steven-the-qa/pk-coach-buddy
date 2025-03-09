@@ -33,6 +33,9 @@ export const linking = {
         screens: {
           resetPassword: 'reset-password',
           verifyEmail: 'verify-email',
+          changeEmail: 'change-email',
+          magicLink: 'magic-link',
+          invite: 'invite',
         }
       },
       '+not-found': '*',
