@@ -83,6 +83,17 @@ PK Coach Buddy serves as a comprehensive assistant for ADAPT-aligned parkour coa
    ```
 5. Open the Expo Go app on your device and scan the QR code
 
+### Supabase Auth Configuration
+
+For proper authentication including password reset functionality:
+
+1. In your Supabase dashboard, go to Authentication → URL Configuration
+2. Set the Site URL to `pkcoachbuddy://` to enable deep linking for password reset
+3. Ensure the app's scheme in `app.config.js` matches this URL (`pkcoachbuddy`)
+4. The app is configured to handle password reset links through deep linking
+
+The mobile app will automatically handle password reset links sent to users' emails, opening the app and allowing users to create a new password securely.
+
 ## Resources
 
 - [Expo Documentation](https://docs.expo.dev/)

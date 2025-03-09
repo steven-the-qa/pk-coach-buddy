@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
-import { Chrome as Home, BookOpen, Calendar, Settings, FileText } from 'lucide-react-native';
+import { Home, BookOpen, Calendar, Settings, FileText } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 import { useAuth } from '../../lib/AuthContext';
 import LoadingScreen from '../../components/LoadingScreen';
 
 export default function TabLayout() {
-  const { theme, darkMode } = useTheme();
+  const { theme } = useTheme();
   const { loading, session } = useAuth();
   const router = useRouter();
   const [isScreenMounted, setIsScreenMounted] = useState(false);
@@ -98,11 +97,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

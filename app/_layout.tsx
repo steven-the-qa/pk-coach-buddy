@@ -8,9 +8,61 @@ import { ThemeProvider } from '../lib/ThemeContext';
 import 'react-native-url-polyfill/auto';
 import { Text, View } from 'react-native';
 import LoadingScreen from '../components/LoadingScreen';
+import * as Linking from 'expo-linking';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
+
+// Define deep linking configuration for Expo Router
+export const linking = {
+  prefixes: ['pkcoachbuddy://', 'https://pkcoachbuddy.com'],
+  config: {
+    initialRouteName: '/(tabs)',
+    screens: {
+      '/(tabs)': {
+        screens: {
+          index: 'home',
+          sessions: 'sessions',
+          journal: 'journal',
+          knowledge: 'knowledge',
+          settings: 'settings',
+        }
+      },
+      'auth': {
+        path: 'auth',
+        screens: {
+          resetPassword: 'reset-password',
+          verifyEmail: 'verify-email',
+        }
+      },
+      '+not-found': '*',
+    }
+  },
+};
+
+// Handle deep linking for password reset
+const handlePasswordResetDeepLink = (url: string) => {
+  const parsedUrl = Linking.parse(url);
+  
+  console.log("Deep link received:", parsedUrl);
+  
+  // Check if this is a password reset link from Supabase
+  if (parsedUrl.queryParams && 
+      (parsedUrl.queryParams.type === 'recovery' || 
+       url.includes('type=recovery'))) {
+    
+    // Extract token and other parameters
+    const token = parsedUrl.queryParams.token || '';
+    const redirectTo = '/auth/resetPassword';
+    
+    console.log("Password reset link detected, navigating to:", redirectTo);
+    
+    // Navigate to password reset screen
+    return redirectTo;
+  }
+  
+  return null;
+};
 
 declare global {
   interface Window {
@@ -118,6 +170,36 @@ function RootLayoutNav() {
     'Inter-SemiBold': require('../assets/fonts/Inter-SemiBold.ttf'),
     'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
   });
+
+  // Set up deep linking handler
+  useEffect(() => {
+    // Handle initial URL that opened the app
+    const getInitialURL = async () => {
+      const url = await Linking.getInitialURL();
+      if (url) {
+        console.log("App opened with URL:", url);
+        const redirectPath = handlePasswordResetDeepLink(url);
+        if (redirectPath) {
+          router.replace(redirectPath);
+        }
+      }
+    };
+
+    getInitialURL();
+
+    // Listen for incoming links while the app is open
+    const subscription = Linking.addEventListener('url', (event) => {
+      console.log("Incoming link while app is open:", event.url);
+      const redirectPath = handlePasswordResetDeepLink(event.url);
+      if (redirectPath) {
+        router.replace(redirectPath);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [router]);
 
   // Mark initial render as complete
   useEffect(() => {

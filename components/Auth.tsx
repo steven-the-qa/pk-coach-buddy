@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 import { logout } from '../lib/authUtils';
@@ -96,101 +96,105 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   // If in logout mode, just show the logout button
   if (mode === 'logout') {
     return (
-      <View style={[styles.logoutContainer, { backgroundColor: theme.card }]}>
-        {user && (
-          <Text style={[styles.userInfo, { color: theme.text }]}>
-            Logged in as: {user.email}
-          </Text>
-        )}
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>Log Out</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.logoutContainer, { backgroundColor: theme.card }]}>
+          {user && (
+            <Text style={[styles.userInfo, { color: theme.text }]}>
+              Logged in as: {user.email}
+            </Text>
+          )}
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <Text style={[styles.title, { color: theme.primary }]}>
-        {isSignUp ? 'Create an account' : 'Sign in to your account'}
-      </Text>
-      
-      <TextInput
-        style={[styles.input, { 
-          backgroundColor: darkMode ? '#374151' : '#f5f5f5',
-          color: theme.text
-        }]}
-        placeholder="Email"
-        placeholderTextColor={theme.secondaryText}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        returnKeyType="next"
-        onSubmitEditing={() => passwordInputRef.current?.focus()}
-        blurOnSubmit={false}
-      />
-      
-      <View style={styles.passwordContainer}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={[styles.container, { backgroundColor: theme.card }]}>
+        <Text style={[styles.title, { color: theme.primary }]}>
+          {isSignUp ? 'Create an account' : 'Sign in to your account'}
+        </Text>
+        
         <TextInput
-          ref={passwordInputRef}
-          style={[styles.passwordInput, { 
+          style={[styles.input, { 
             backgroundColor: darkMode ? '#374151' : '#f5f5f5',
             color: theme.text
           }]}
-          placeholder="Password"
+          placeholder="Email"
           placeholderTextColor={theme.secondaryText}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          returnKeyType="done"
-          onSubmitEditing={handleAuth}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordInputRef.current?.focus()}
+          blurOnSubmit={false}
         />
+        
+        <View style={styles.passwordContainer}>
+          <TextInput
+            ref={passwordInputRef}
+            style={[styles.passwordInput, { 
+              backgroundColor: darkMode ? '#374151' : '#f5f5f5',
+              color: theme.text
+            }]}
+            placeholder="Password"
+            placeholderTextColor={theme.secondaryText}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            returnKeyType="done"
+            onSubmitEditing={handleAuth}
+          />
+          <TouchableOpacity 
+            style={styles.eyeIconContainer} 
+            onPress={togglePasswordVisibility}
+          >
+            {showPassword ? 
+              <EyeOff size={20} color={theme.secondaryText} /> : 
+              <Eye size={20} color={theme.secondaryText} />
+            }
+          </TouchableOpacity>
+        </View>
+        
+        {!isSignUp && (
+          <TouchableOpacity
+            onPress={handleForgotPassword}
+            style={styles.forgotPasswordButton}
+          >
+            <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity 
-          style={styles.eyeIconContainer} 
-          onPress={togglePasswordVisibility}
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={handleAuth}
+          disabled={loading}
         >
-          {showPassword ? 
-            <EyeOff size={20} color={theme.secondaryText} /> : 
-            <Eye size={20} color={theme.secondaryText} />
-          }
-        </TouchableOpacity>
-      </View>
-      
-      {!isSignUp && (
-        <TouchableOpacity
-          onPress={handleForgotPassword}
-          style={styles.forgotPasswordButton}
-        >
-          <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
-            Forgot Password?
+          <Text style={styles.buttonText}>
+            {isSignUp ? 'Sign Up' : 'Sign In'}
           </Text>
         </TouchableOpacity>
-      )}
-      
-      <TouchableOpacity 
-        style={[styles.button, { backgroundColor: theme.primary }]}
-        onPress={handleAuth}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {isSignUp ? 'Sign Up' : 'Sign In'}
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        onPress={() => setIsSignUp(!isSignUp)}
-        style={styles.switchButton}
-      >
-        <Text style={[styles.switchText, { color: theme.primary }]}>
-          {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        
+        <TouchableOpacity
+          onPress={() => setIsSignUp(!isSignUp)}
+          style={styles.switchButton}
+        >
+          <Text style={[styles.switchText, { color: theme.primary }]}>
+            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 

@@ -13,6 +13,7 @@ export const lightTheme = {
   tabBar: '#FFFFFF',
   tabBarBorder: '#E2E8F0',
   primary: '#3B82F6',
+  error: '#EF4444',
 };
 
 export const darkTheme = {
@@ -26,6 +27,7 @@ export const darkTheme = {
   tabBar: '#1F2937',
   tabBarBorder: '#374151',
   primary: '#3B82F6',
+  error: '#EF4444',
 };
 
 // Create the context

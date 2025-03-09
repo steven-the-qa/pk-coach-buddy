@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, Text } from 'react-native';
+import { View, StyleSheet, Image, Text, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Auth from '../components/Auth';
@@ -44,23 +44,25 @@ export default function AuthScreen() {
   }
   
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.contentWrapper}>
-        <View style={styles.content}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/images/login_logo.jpg')} 
-              style={styles.logo}
-            />
-            <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
-            <Text style={[styles.tagline, { color: theme.secondaryText }]}>Overcome Coaching Obstacles</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.contentWrapper}>
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('../assets/images/login_logo.jpg')} 
+                style={styles.logo}
+              />
+              <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
+              <Text style={[styles.tagline, { color: theme.secondaryText }]}>Overcome Coaching Obstacles</Text>
+            </View>
+            
+            <Auth onLogin={handleLogin} />
           </View>
-          
-          <Auth onLogin={handleLogin} />
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
