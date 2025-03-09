@@ -27,9 +27,6 @@ SUPABASE_KEY=your-supabase-anon-key
 # Google/Gemini API Keys
 GEMINI_API_KEY=your-gemini-api-key
 GOOGLE_CLIENT_ID_IOS=your-google-client-id
-
-# Environment indicator
-APP_ENV=development
 ```
 
 ### Production Deployment
