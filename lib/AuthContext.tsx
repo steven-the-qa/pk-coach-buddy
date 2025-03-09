@@ -49,7 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return supabase.auth.signInWithPassword({ email, password });
     },
     signUp: async (email: string, password: string) => {
-      return supabase.auth.signUp({ email, password });
+      return supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: 'pkcoachbuddy://auth/callback'
+        }
+      });
     },
     signOut: async () => {
       console.log("AuthContext: signOut method called");

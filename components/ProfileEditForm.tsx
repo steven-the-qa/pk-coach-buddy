@@ -72,6 +72,24 @@ export default function ProfileEditForm({
     }
   };
 
+  const handleEmailChange = async () => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+
+      if (error) throw error;
+
+      Alert.alert(
+        'Email Update',
+        'Please check your email to confirm the change.',
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.card }]}>
       <View style={styles.header}>
