@@ -6,14 +6,12 @@ import * as Linking from 'expo-linking';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/ThemeContext';
 import { ArrowLeft, Check, AlertTriangle } from 'lucide-react-native';
-import { useAuth } from '../../lib/AuthContext';
 
 export default function MagicLinkScreen() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { theme, darkMode } = useTheme();
+  const { theme } = useTheme();
   const router = useRouter();
-  const { user } = useAuth();
 
   useEffect(() => {
     const processDeepLink = async () => {

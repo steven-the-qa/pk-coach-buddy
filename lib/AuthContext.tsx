@@ -9,6 +9,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
+  signInWithMagicLink: (email: string) => Promise<{ error: any }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("AuthContext: Exception during signOut:", err);
         return { error: err };
       }
+    },
+    signInWithMagicLink: async (email: string) => {
+      return supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: 'pkcoachbuddy://auth/magic-link'
+        }
+      });
     },
   };
 

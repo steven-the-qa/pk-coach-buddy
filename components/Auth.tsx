@@ -4,7 +4,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 import { logout } from '../lib/authUtils';
 import LoadingScreen from './LoadingScreen';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, Mail } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
 
 type AuthProps = {
@@ -18,10 +18,11 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(mode === 'signup');
+  const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const { theme, darkMode } = useTheme();
   const passwordInputRef = useRef<TextInput>(null);
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, signInWithMagicLink } = useAuth();
 
   const handleAuth = async () => {
     setLoading(true);
@@ -42,6 +43,30 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
       }
     } catch (error: any) {
       Alert.alert('Error', error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleMagicLinkSignIn = async () => {
+    if (!email.trim()) {
+      Alert.alert('Email Required', 'Please enter your email address to sign in with a magic link.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await signInWithMagicLink(email);
+      
+      if (error) throw error;
+      
+      setIsMagicLinkSent(true);
+      Alert.alert(
+        'Magic Link Sent',
+        'Check your email for a link to sign in. If it doesn\'t appear within a few minutes, check your spam folder.'
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -109,6 +134,44 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
             disabled={loading}
           >
             <Text style={styles.buttonText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  }
+
+  // If magic link was sent, show a message
+  if (isMagicLinkSent) {
+    return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.container, { backgroundColor: theme.card }]}>
+          <Text style={[styles.title, { color: theme.primary }]}>
+            Check Your Email
+          </Text>
+          
+          <View style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
+            <Mail size={40} color="#fff" />
+          </View>
+          
+          <Text style={[styles.message, { color: theme.text }]}>
+            We've sent a magic link to:
+          </Text>
+          
+          <Text style={[styles.emailHighlight, { color: theme.text }]}>
+            {email}
+          </Text>
+          
+          <Text style={[styles.message, { color: theme.secondaryText, marginTop: 10 }]}>
+            Click the link in your email to sign in to your account.
+          </Text>
+          
+          <TouchableOpacity 
+            style={[styles.button, { backgroundColor: theme.primary, marginTop: 20 }]}
+            onPress={() => setIsMagicLinkSent(false)}
+          >
+            <Text style={styles.buttonText}>
+              Back to Sign In
+            </Text>
           </TouchableOpacity>
         </View>
       </TouchableWithoutFeedback>
@@ -185,6 +248,30 @@ const Auth: React.FC<AuthProps> = ({ onLogin, mode = 'login' }) => {
           </Text>
         </TouchableOpacity>
         
+        {!isSignUp && (
+          <View style={styles.orContainer}>
+            <View style={[styles.orLine, { backgroundColor: theme.border }]} />
+            <Text style={[styles.orText, { color: theme.secondaryText }]}>OR</Text>
+            <View style={[styles.orLine, { backgroundColor: theme.border }]} />
+          </View>
+        )}
+        
+        {!isSignUp && (
+          <TouchableOpacity 
+            style={[styles.secondaryButton, { 
+              borderColor: theme.buttonBorder,
+              backgroundColor: darkMode ? '#374151' : '#f5f5f5'
+            }]}
+            onPress={handleMagicLinkSignIn}
+            disabled={loading}
+          >
+            <Mail size={18} color={theme.primary} style={styles.buttonIcon} />
+            <Text style={[styles.secondaryButtonText, { color: theme.text }]}>
+              Sign In with Magic Link
+            </Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity
           onPress={() => setIsSignUp(!isSignUp)}
           style={styles.switchButton}
@@ -259,35 +346,83 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoutButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: '#EF4444',
+    width: '100%',
     borderRadius: 5,
     padding: 15,
     alignItems: 'center',
-    width: '100%',
-    maxWidth: 200,
   },
   buttonText: {
-    color: '#fff',
+    color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
   },
   switchButton: {
-    marginTop: 15,
+    marginTop: 20,
     alignItems: 'center',
   },
   switchText: {
     fontSize: 14,
   },
   userInfo: {
-    marginBottom: 15,
+    marginBottom: 20,
     fontSize: 16,
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   forgotPasswordText: {
     fontSize: 14,
+  },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+  },
+  orText: {
+    marginHorizontal: 10,
+    fontSize: 14,
+  },
+  secondaryButton: {
+    width: '100%',
+    borderRadius: 5,
+    padding: 15,
+    alignItems: 'center',
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    fontWeight: '500',
+    fontSize: 16,
+  },
+  buttonIcon: {
+    marginRight: 10,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  message: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  emailHighlight: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
   },
 });
 
