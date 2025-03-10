@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -115,132 +115,150 @@ export default function AuthScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <Stack.Screen options={{ headerShown: false }} />
         
-        <View style={styles.formContainer}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBackground}>
-              <Image 
-                source={require('../../assets/images/login_logo.jpg')} 
-                style={styles.logo}
-              />
-            </View>
-            <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
-            <Text style={[styles.tagline, { color: theme.secondaryText }]}>Overcome Coaching Obstacles</Text>
-          </View>
-          
-          <View style={[styles.formBox, { backgroundColor: '#1E293B' }]}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity 
-                style={[
-                  styles.tab,
-                  activeTab === 'signin' && styles.activeTab
-                ]}
-                onPress={() => setActiveTab('signin')}
-              >
-                <Text style={[
-                  styles.tabText,
-                  { color: activeTab === 'signin' ? '#3B82F6' : theme.secondaryText }
-                ]}>
-                  Sign In
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[
-                  styles.tab,
-                  activeTab === 'signup' && styles.activeTab
-                ]}
-                onPress={() => setActiveTab('signup')}
-              >
-                <Text style={[
-                  styles.tabText,
-                  { color: activeTab === 'signup' ? '#3B82F6' : theme.secondaryText }
-                ]}>
-                  Sign Up
-                </Text>
-              </TouchableOpacity>
-            </View>
-            
-            <TextInput
-              style={[styles.input, { backgroundColor: '#0F172A', color: theme.text }]}
-              placeholder="Email"
-              placeholderTextColor={theme.secondaryText}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              returnKeyType="next"
-              onSubmitEditing={() => {
-                passwordInputRef.current?.focus();
-              }}
-              blurOnSubmit={false}
-            />
-            
-            <View style={styles.passwordContainer}>
-              <TextInput
-                ref={passwordInputRef}
-                style={[styles.passwordInput, { backgroundColor: '#0F172A', color: theme.text }]}
-                placeholder="Password"
-                placeholderTextColor={theme.secondaryText}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                returnKeyType="done"
-                onSubmitEditing={activeTab === 'signin' ? handlePasswordLogin : handleSignUp}
-              />
-              <TouchableOpacity 
-                style={styles.passwordToggle}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Ionicons 
-                  name={showPassword ? 'eye-off' : 'eye'} 
-                  size={24} 
-                  color={theme.secondaryText}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={styles.formContainer}>
+            <View style={[
+              styles.logoContainer,
+              Platform.OS === 'ios' && { flex: 1, justifyContent: 'center' }
+            ]}>
+              <View style={styles.logoBackground}>
+                <Image 
+                  source={require('../../assets/images/login_logo.jpg')} 
+                  style={styles.logo}
                 />
-              </TouchableOpacity>
+              </View>
+              <Text style={[styles.appName, { color: theme.text }]}>PK Coach Buddy</Text>
+              <Text style={[styles.tagline, { color: theme.secondaryText }]}>
+                Overcome Coaching Obstacles
+              </Text>
             </View>
-
-            {activeTab === 'signin' && (
-              <View style={styles.forgotPasswordContainer}>
-                <TouchableOpacity
-                  onPress={handleForgotPassword}
-                  disabled={loading}
+            
+            <View style={[styles.formBox, { backgroundColor: '#1E293B' }]}>
+              <View style={styles.tabContainer}>
+                <TouchableOpacity 
+                  style={[
+                    styles.tab,
+                    activeTab === 'signin' && styles.activeTab
+                  ]}
+                  onPress={() => setActiveTab('signin')}
                 >
-                  <Text style={[styles.linkText, { color: '#3B82F6' }]}>
-                    Forgot Password?
+                  <Text style={[
+                    styles.tabText,
+                    { color: activeTab === 'signin' ? '#3B82F6' : theme.secondaryText }
+                  ]}>
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[
+                    styles.tab,
+                    activeTab === 'signup' && styles.activeTab
+                  ]}
+                  onPress={() => setActiveTab('signup')}
+                >
+                  <Text style={[
+                    styles.tabText,
+                    { color: activeTab === 'signup' ? '#3B82F6' : theme.secondaryText }
+                  ]}>
+                    Sign Up
                   </Text>
                 </TouchableOpacity>
               </View>
-            )}
+              
+              <View style={styles.formContent}>
+                <TextInput
+                  style={[styles.input, { backgroundColor: '#0F172A', color: theme.text }]}
+                  placeholder="Email"
+                  placeholderTextColor={theme.secondaryText}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                  onSubmitEditing={() => {
+                    passwordInputRef.current?.focus();
+                  }}
+                  blurOnSubmit={false}
+                />
+                
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    ref={passwordInputRef}
+                    style={[styles.passwordInput, { backgroundColor: '#0F172A', color: theme.text }]}
+                    placeholder="Password"
+                    placeholderTextColor={theme.secondaryText}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    returnKeyType="done"
+                    onSubmitEditing={activeTab === 'signin' ? handlePasswordLogin : handleSignUp}
+                  />
+                  <TouchableOpacity 
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons 
+                      name={showPassword ? 'eye-off' : 'eye'} 
+                      size={24} 
+                      color={theme.secondaryText}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#3B82F6' }]}
-              onPress={activeTab === 'signin' ? handlePasswordLogin : handleSignUp}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {activeTab === 'signin' ? 'Sign In' : 'Sign Up'}
-                </Text>
-              )}
-            </TouchableOpacity>
+                <View style={styles.variableContent}>
+                  {activeTab === 'signin' ? (
+                    <View style={styles.forgotPasswordContainer}>
+                      <TouchableOpacity
+                        onPress={handleForgotPassword}
+                        disabled={loading}
+                      >
+                        <Text style={[styles.linkText, { color: '#3B82F6' }]}>
+                          Forgot Password?
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.forgotPasswordContainer} />
+                  )}
+                </View>
 
-            {activeTab === 'signin' && (
-              <View style={styles.linkContainer}>
                 <TouchableOpacity
-                  style={styles.linkButton}
-                  onPress={() => handleMagicLink(email)}
+                  style={[styles.button, { backgroundColor: '#3B82F6' }]}
+                  onPress={activeTab === 'signin' ? handlePasswordLogin : handleSignUp}
                   disabled={loading}
                 >
-                  <Text style={[styles.linkText, { color: '#3B82F6' }]}>
-                    Sign in with Magic Link
-                  </Text>
+                  {loading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.buttonText}>
+                      {activeTab === 'signin' ? 'Sign In' : 'Sign Up'}
+                    </Text>
+                  )}
                 </TouchableOpacity>
+
+                <View style={styles.variableContent}>
+                  {activeTab === 'signin' && (
+                    <View style={styles.linkContainer}>
+                      <TouchableOpacity
+                        style={styles.linkButton}
+                        onPress={() => handleMagicLink(email)}
+                        disabled={loading}
+                      >
+                        <Text style={[styles.linkText, { color: '#3B82F6' }]}>
+                          Sign in with Magic Link
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </View>
-            )}
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -250,6 +268,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   formContainer: {
     flex: 1,
     padding: 20,
@@ -257,7 +278,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 24,
   },
   logoBackground: {
     width: 140,
@@ -366,5 +387,11 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  formContent: {
+    minHeight: 320,
+  },
+  variableContent: {
+    height: 40,
   },
 }); 
