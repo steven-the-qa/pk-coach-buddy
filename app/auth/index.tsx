@@ -1,11 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { makeRedirectUri } from 'expo-auth-session';
 
 export default function AuthScreen() {
@@ -15,9 +14,12 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const { theme } = useTheme();
+  const router = useRouter();
   const passwordInputRef = useRef<TextInput | null>(null);
 
+  // Generate dynamic redirect URI using expo-auth-session
   const redirectUri = makeRedirectUri();
+  console.log('Auth screen redirectUri:', redirectUri);
 
   const handlePasswordLogin = async () => {
     setLoading(true);

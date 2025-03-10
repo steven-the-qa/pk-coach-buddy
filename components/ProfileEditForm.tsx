@@ -4,6 +4,9 @@ import { X } from 'lucide-react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 
+// Use a consistent redirect URL for all auth flows
+const AUTH_REDIRECT_URL = 'pkcoachbuddy://auth/callback';
+
 interface ProfileEditFormProps {
   username: string;
   email: string;
@@ -34,10 +37,13 @@ export default function ProfileEditForm({
     setIsUpdating(true);
     
     try {
-      // Update user data in Supabase
+      // Update user data in Supabase with email redirect
+      // Note: emailRedirectTo has to be passed in a different way for updateUser
       const { error } = await supabase.auth.updateUser({
         email: email !== user.email ? email : undefined,
-        data: { username }
+        data: { username },
+      }, {
+        emailRedirectTo: AUTH_REDIRECT_URL
       });
       
       if (error) {
@@ -69,24 +75,6 @@ export default function ProfileEditForm({
       Alert.alert('Error', error.message || 'An error occurred');
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const handleEmailChange = async () => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        email: newEmail
-      });
-
-      if (error) throw error;
-
-      Alert.alert(
-        'Email Update',
-        'Please check your email to confirm the change.',
-        [{ text: 'OK' }]
-      );
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
     }
   };
 

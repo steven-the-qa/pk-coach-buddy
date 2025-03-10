@@ -1,6 +1,10 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from './supabase';
 import { Session } from '@supabase/supabase-js';
+import { makeRedirectUri } from 'expo-auth-session';
+
+// Define a consistent redirect URL for all auth flows
+const AUTH_REDIRECT_URL = 'pkcoachbuddy://auth/callback';
 
 type AuthContextType = {
   session: Session | null;
@@ -19,6 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Generate dynamic redirect URI using expo-auth-session
+  const redirectUri = makeRedirectUri();
+  console.log('AuthContext redirectUri:', redirectUri);
+  
   useEffect(() => {
     // Get session from storage and set state
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -53,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: 'pkcoachbuddy://auth/callback'
+          emailRedirectTo: redirectUri
         }
       });
     },
@@ -90,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: 'pkcoachbuddy://auth/magic-link'
+          emailRedirectTo: redirectUri
         }
       });
     },
