@@ -35,6 +35,11 @@ export default function AuthScreen() {
   };
 
   const handleMagicLink = async (email: string) => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
