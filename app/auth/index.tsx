@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -41,6 +42,9 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
+      // Store the email before sending magic link
+      await AsyncStorage.setItem('pendingAuthEmail', email);
+    
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {

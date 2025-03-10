@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import { supabase } from '../../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AuthCallback() {
   const { theme } = useTheme();
@@ -11,19 +12,24 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handleAuthCallback() {
-      const token = params?.token;
-      const type = params?.type;
+      const tokenValue = Array.isArray(params?.token) ? params.token[0] : params?.token;
+      const type = Array.isArray(params?.type) ? params.type[0] : params?.type;
 
       try {
-        const tokenValue = Array.isArray(params?.token) ? params.token[0] : params?.token;
         if (!tokenValue) throw new Error('No token provided');
+        
+        // Get the stored email
+        const email = await AsyncStorage.getItem('pendingAuthEmail');
+        if (!email) throw new Error('No email found for verification');
 
-        // Verify the token regardless of type
         const { error } = await supabase.auth.verifyOtp({
           token: tokenValue,
           type: type as any,
-          email: Array.isArray(params?.email) ? params.email[0] : params?.email || '',
+          email,
         });
+
+        // Clear the stored email after verification
+        await AsyncStorage.removeItem('pendingAuthEmail');
 
         if (error) throw error;
 
