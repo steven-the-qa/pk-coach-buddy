@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { makeRedirectUri } from 'expo-auth-session';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -15,6 +16,8 @@ export default function AuthScreen() {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const { theme } = useTheme();
   const passwordInputRef = useRef<TextInput | null>(null);
+
+  const redirectUri = makeRedirectUri();
 
   const handlePasswordLogin = async () => {
     setLoading(true);
@@ -42,14 +45,10 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
-      // Store the email before sending magic link
-      await AsyncStorage.setItem('pendingAuthEmail', email);
-    
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: true,
-          emailRedirectTo: 'pkcoachbuddy://auth/callback',
+          emailRedirectTo: redirectUri,
         },
       });
 
@@ -76,7 +75,7 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'pkcoachbuddy://auth/callback',
+        redirectTo: redirectUri,
       });
 
       if (error) throw error;
@@ -100,17 +99,20 @@ export default function AuthScreen() {
         email,
         password,
         options: {
-          emailRedirectTo: 'pkcoachbuddy://auth/callback',
+          emailRedirectTo: redirectUri,
         }
       });
 
       if (error) throw error;
       
       Alert.alert(
-        'Check your email',
-        'We sent you a confirmation link to complete your registration.',
+        'Verify your email',
+        'Please check your email for a confirmation link to complete your registration.',
         [{ text: 'OK' }]
       );
+      setEmail('');
+      setPassword('');
+      setActiveTab('signin');
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
