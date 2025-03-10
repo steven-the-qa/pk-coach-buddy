@@ -51,6 +51,7 @@ export default function AuthScreen() {
         email,
         options: {
           emailRedirectTo: redirectUri,
+          shouldCreateUser: false
         },
       });
 

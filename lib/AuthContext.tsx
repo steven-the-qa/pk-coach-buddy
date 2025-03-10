@@ -98,7 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectUri
+          emailRedirectTo: redirectUri,
+          shouldCreateUser: false
         }
       });
     },
