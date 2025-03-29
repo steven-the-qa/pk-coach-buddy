@@ -4,10 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, User } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 
-export default function SettingsScreen() {
-  const [notifications, setNotifications] = React.useState(true);
-  
-  // Use the shared theme context
+export default function SettingsScreen() {  
   const { darkMode, setDarkMode, theme } = useTheme();
 
   return (
@@ -37,21 +34,6 @@ export default function SettingsScreen() {
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Preferences</Text>
           <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
-            <View style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
-              <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#7F1D1D' : '#FEF2F2' }]}>
-                  <Bell size={20} color={darkMode ? '#FCA5A5' : '#EF4444'} />
-                </View>
-                <Text style={[styles.settingsItemText, { color: theme.text }]}>Notifications</Text>
-              </View>
-              <Switch
-                value={notifications}
-                onValueChange={setNotifications}
-                trackColor={{ false: darkMode ? '#4B5563' : '#E2E8F0', true: '#BFDBFE' }}
-                thumbColor={notifications ? '#3B82F6' : darkMode ? '#6B7280' : '#F1F5F9'}
-              />
-            </View>
-            
             <View style={styles.settingsItem}>
               <View style={styles.settingsItemLeft}>
                 <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#312E81' : '#F8FAFC' }]}>

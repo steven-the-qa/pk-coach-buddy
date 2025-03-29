@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, BookOpen, MessageSquare, Lightbulb, ChevronRight, X, Zap, Send, Plus } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
@@ -156,211 +156,213 @@ export default function KnowledgeScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <View style={styles.headerTextContainer}>
-          <Text style={[styles.title, { color: theme.text }]}>Knowledge Base</Text>
-          <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-            Reference materials and coaching resources
-          </Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.header}>
+          <View style={styles.headerTextContainer}>
+            <Text style={[styles.title, { color: theme.text }]}>Knowledge Base</Text>
+            <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+              Reference materials and coaching resources
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={[styles.addButton, { backgroundColor: theme.primary }]} 
+            onPress={handleAddArticle}
+          >
+            <Plus size={24} color="white" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          style={[styles.addButton, { backgroundColor: theme.primary }]} 
-          onPress={handleAddArticle}
-        >
-          <Plus size={24} color="white" />
-        </TouchableOpacity>
-      </View>
 
-      {/* Combined input with mode tabs */}
-      <View style={styles.inputContainer}>
-        {/* Mode selector tabs */}
-        <View style={styles.modeTabs}>
-          <TouchableOpacity 
-            style={[
-              styles.modeTab, 
-              inputMode === InputMode.SEARCH && styles.activeTab,
-              { borderColor: theme.border }
-            ]}
-            onPress={() => switchMode(InputMode.SEARCH)}
-          >
-            <Search size={16} color={inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText} />
-            <Text 
+        {/* Combined input with mode tabs */}
+        <View style={styles.inputContainer}>
+          {/* Mode selector tabs */}
+          <View style={styles.modeTabs}>
+            <TouchableOpacity 
               style={[
-                styles.modeTabText, 
-                { color: inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText }
+                styles.modeTab, 
+                inputMode === InputMode.SEARCH && styles.activeTab,
+                { borderColor: theme.border }
               ]}
+              onPress={() => switchMode(InputMode.SEARCH)}
             >
-              Search
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[
-              styles.modeTab, 
-              inputMode === InputMode.ASK && styles.activeTab,
-              { borderColor: theme.border }
-            ]}
-            onPress={() => switchMode(InputMode.ASK)}
-          >
-            <Zap size={16} color={inputMode === InputMode.ASK ? theme.primary : theme.secondaryText} />
-            <Text 
+              <Search size={16} color={inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText} />
+              <Text 
+                style={[
+                  styles.modeTabText, 
+                  { color: inputMode === InputMode.SEARCH ? theme.primary : theme.secondaryText }
+                ]}
+              >
+                Search
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
               style={[
-                styles.modeTabText, 
-                { color: inputMode === InputMode.ASK ? theme.primary : theme.secondaryText }
+                styles.modeTab, 
+                inputMode === InputMode.ASK && styles.activeTab,
+                { borderColor: theme.border }
               ]}
+              onPress={() => switchMode(InputMode.ASK)}
             >
-              Ask Buddy
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {/* Input field */}
-        <View style={[styles.inputField, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          {inputMode === InputMode.SEARCH ? (
-            <Search size={20} color={theme.secondaryText} style={styles.inputIcon} />
-          ) : (
-            <Zap size={20} color={theme.primary} style={styles.inputIcon} />
-          )}
+              <Zap size={16} color={inputMode === InputMode.ASK ? theme.primary : theme.secondaryText} />
+              <Text 
+                style={[
+                  styles.modeTabText, 
+                  { color: inputMode === InputMode.ASK ? theme.primary : theme.secondaryText }
+                ]}
+              >
+                Ask Buddy
+              </Text>
+            </TouchableOpacity>
+          </View>
           
-          <TextInput
-            style={[styles.textInput, { color: theme.text }]}
-            placeholder={
-              inputMode === InputMode.SEARCH 
-                ? "Search knowledge base..." 
-                : "Ask Buddy a question..."
-            }
-            placeholderTextColor={theme.secondaryText}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline={inputMode === InputMode.ASK}
-            numberOfLines={inputMode === InputMode.ASK ? 2 : 1}
-            autoCapitalize="none"
-          />
-          
-          {inputText.length > 0 && (
-            <>
-              <TouchableOpacity onPress={clearInput}>
-                <X size={20} color={theme.secondaryText} style={styles.clearIcon} />
-              </TouchableOpacity>
-              
-              {inputMode === InputMode.ASK && (
-                <TouchableOpacity 
-                  style={[styles.sendButton, { backgroundColor: theme.primary }]}
-                  onPress={handleAskQuestion}
-                >
-                  <Send size={18} color="#FFFFFF" />
+          {/* Input field */}
+          <View style={[styles.inputField, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            {inputMode === InputMode.SEARCH ? (
+              <Search size={20} color={theme.secondaryText} style={styles.inputIcon} />
+            ) : (
+              <Zap size={20} color={theme.primary} style={styles.inputIcon} />
+            )}
+            
+            <TextInput
+              style={[styles.textInput, { color: theme.text }]}
+              placeholder={
+                inputMode === InputMode.SEARCH 
+                  ? "Search knowledge base..." 
+                  : "Ask Buddy a question..."
+              }
+              placeholderTextColor={theme.secondaryText}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline={inputMode === InputMode.ASK}
+              numberOfLines={inputMode === InputMode.ASK ? 2 : 1}
+              autoCapitalize="none"
+            />
+            
+            {inputText.length > 0 && (
+              <>
+                <TouchableOpacity onPress={clearInput}>
+                  <X size={20} color={theme.secondaryText} style={styles.clearIcon} />
                 </TouchableOpacity>
-              )}
+                
+                {inputMode === InputMode.ASK && (
+                  <TouchableOpacity 
+                    style={[styles.sendButton, { backgroundColor: theme.primary }]}
+                    onPress={handleAskQuestion}
+                  >
+                    <Send size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+
+        <ScrollView style={styles.contentContainer}>
+          {/* No results message */}
+          {isSearching && !hasResults && (
+            <View style={styles.noResultsContainer}>
+              <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
+                No results found for "{inputText}"
+              </Text>
+              <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
+                Try different keywords or check your spelling
+              </Text>
+            </View>
+          )}
+
+          {/* AI explanation message when in ASK mode */}
+          {inputMode === InputMode.ASK && !isSearching && (
+            <View style={[styles.aiExplanationCard, { backgroundColor: theme.card }]}>
+              <Zap size={24} color={theme.primary} style={styles.aiExplanationIcon} />
+              <View style={styles.aiExplanationContent}>
+                <Text style={[styles.aiExplanationTitle, { color: theme.text }]}>
+                  Buddy AI
+                </Text>
+                <Text style={[styles.aiExplanationText, { color: theme.secondaryText }]}>
+                  What can I help you with?
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Conditionally render categories section */}
+          {(inputMode === InputMode.SEARCH || !isSearching) && filteredCategories.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                {isSearching ? 'Matching Categories' : 'Categories'}
+              </Text>
+              <View style={styles.categoriesContainer}>
+                {filteredCategories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[styles.categoryCard, { backgroundColor: theme.card }]}
+                  >
+                    <View style={[styles.categoryIconContainer, { backgroundColor: category.color }]}>
+                      {category.icon}
+                    </View>
+                    <View style={styles.categoryContent}>
+                      <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
+                      <Text style={[styles.categoryDescription, { color: theme.secondaryText }]}>
+                        {category.description}
+                      </Text>
+                    </View>
+                    <ChevronRight size={20} color={theme.secondaryText} />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </>
           )}
-        </View>
-      </View>
 
-      <ScrollView style={styles.contentContainer}>
-        {/* No results message */}
-        {isSearching && !hasResults && (
-          <View style={styles.noResultsContainer}>
-            <Text style={[styles.noResultsText, { color: theme.secondaryText }]}>
-              No results found for "{inputText}"
-            </Text>
-            <Text style={[styles.noResultsSubtext, { color: theme.secondaryText }]}>
-              Try different keywords or check your spelling
-            </Text>
-          </View>
-        )}
-
-        {/* AI explanation message when in ASK mode */}
-        {inputMode === InputMode.ASK && !isSearching && (
-          <View style={[styles.aiExplanationCard, { backgroundColor: theme.card }]}>
-            <Zap size={24} color={theme.primary} style={styles.aiExplanationIcon} />
-            <View style={styles.aiExplanationContent}>
-              <Text style={[styles.aiExplanationTitle, { color: theme.text }]}>
-                Buddy AI
+          {/* Conditionally render articles section */}
+          {(inputMode === InputMode.SEARCH || !isSearching) && filteredArticles.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                {isSearching ? 'Matching Articles' : 'Featured Articles'}
               </Text>
-              <Text style={[styles.aiExplanationText, { color: theme.secondaryText }]}>
-                What can I help you with?
-              </Text>
-            </View>
-          </View>
-        )}
+              <View style={styles.articlesContainer}>
+                {filteredArticles.map((article) => (
+                  <TouchableOpacity key={article.id} style={[styles.articleCard, { backgroundColor: theme.card }]}>
+                    <Image
+                      source={{ uri: article.image }}
+                      style={styles.articleImage}
+                    />
+                    <View style={styles.articleContent}>
+                      <Text style={[styles.articleTitle, { color: theme.text }]}>{article.title}</Text>
+                      <Text style={[styles.articleDescription, { color: theme.secondaryText }]}>
+                        {article.description}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
 
-        {/* Conditionally render categories section */}
-        {(inputMode === InputMode.SEARCH || !isSearching) && filteredCategories.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {isSearching ? 'Matching Categories' : 'Categories'}
-            </Text>
-            <View style={styles.categoriesContainer}>
-              {filteredCategories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[styles.categoryCard, { backgroundColor: theme.card }]}
-                >
-                  <View style={[styles.categoryIconContainer, { backgroundColor: category.color }]}>
-                    {category.icon}
-                  </View>
-                  <View style={styles.categoryContent}>
-                    <Text style={[styles.categoryTitle, { color: theme.text }]}>{category.title}</Text>
-                    <Text style={[styles.categoryDescription, { color: theme.secondaryText }]}>
-                      {category.description}
-                    </Text>
-                  </View>
-                  <ChevronRight size={20} color={theme.secondaryText} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-
-        {/* Conditionally render articles section */}
-        {(inputMode === InputMode.SEARCH || !isSearching) && filteredArticles.length > 0 && (
-          <>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              {isSearching ? 'Matching Articles' : 'Featured Articles'}
-            </Text>
-            <View style={styles.articlesContainer}>
-              {filteredArticles.map((article) => (
-                <TouchableOpacity key={article.id} style={[styles.articleCard, { backgroundColor: theme.card }]}>
-                  <Image
-                    source={{ uri: article.image }}
-                    style={styles.articleImage}
-                  />
-                  <View style={styles.articleContent}>
-                    <Text style={[styles.articleTitle, { color: theme.text }]}>{article.title}</Text>
-                    <Text style={[styles.articleDescription, { color: theme.secondaryText }]}>
-                      {article.description}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-
-        {/* Conditionally render recent searches section */}
-        {inputMode === InputMode.SEARCH && filteredSearches.length > 0 && !isSearching && (
-          <>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
-            <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
-              {filteredSearches.map((search, index) => (
-                <TouchableOpacity 
-                  key={index} 
-                  style={[
-                    styles.recentSearchItem, 
-                    { borderBottomColor: theme.border },
-                    index === filteredSearches.length - 1 ? { borderBottomWidth: 0 } : { borderBottomWidth: 1 }
-                  ]}
-                >
-                  <Search size={18} color={theme.secondaryText} style={styles.recentSearchIcon} />
-                  <Text style={[styles.recentSearchText, { color: theme.text }]}>{search}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          {/* Conditionally render recent searches section */}
+          {inputMode === InputMode.SEARCH && filteredSearches.length > 0 && !isSearching && (
+            <>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Searches</Text>
+              <View style={[styles.recentSearchesContainer, { backgroundColor: theme.card }]}>
+                {filteredSearches.map((search, index) => (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={[
+                      styles.recentSearchItem, 
+                      { borderBottomColor: theme.border },
+                      index === filteredSearches.length - 1 ? { borderBottomWidth: 0 } : { borderBottomWidth: 1 }
+                    ]}
+                  >
+                    <Search size={18} color={theme.secondaryText} style={styles.recentSearchIcon} />
+                    <Text style={[styles.recentSearchText, { color: theme.text }]}>{search}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
