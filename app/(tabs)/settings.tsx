@@ -1,56 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight } from 'lucide-react-native';
-import { useAuth } from '../../lib/AuthContext';
+import { Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, User } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
-import LogoutButton from '../../components/LogoutButton';
-import ProfileImagePicker from '../../components/ProfileImagePicker';
-import ProfileEditForm from '../../components/ProfileEditForm';
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = React.useState(true);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
-  const { user } = useAuth();
   
   // Use the shared theme context
   const { darkMode, setDarkMode, theme } = useTheme();
-  
-  // Load user data when component mounts
-  useEffect(() => {
-    console.log("Settings Screen Mounted, Auth User:", user?.email);
-    
-    if (user) {
-      // Set initial values
-      setEmail(user.email || '');
-      setUsername(user.user_metadata?.username || '');
-      
-      // Set profile image
-      if (user.user_metadata?.avatar_url) {
-        // Add cache-busting parameter
-        const imageUrl = `${user.user_metadata.avatar_url}?t=${new Date().getTime()}`;
-        setProfileImage(imageUrl);
-        setImageError(false);
-      } else {
-        setProfileImage(null); // Set to null to trigger gradient fallback
-      }
-    }
-  }, [user]);
-
-  // Handle opening the edit modal
-  const handleEditPress = () => {
-    setEditModalVisible(true);
-  };
-
-  // Handle profile updates from the edit form
-  const handleProfileUpdate = (newUsername: string, newEmail: string) => {
-    setUsername(newUsername);
-    setEmail(newEmail);
-  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -60,56 +18,19 @@ export default function SettingsScreen() {
 
       <ScrollView style={styles.contentContainer}>
         <View style={[styles.profileSection, { backgroundColor: theme.card }]}>
-          <ProfileImagePicker 
-            userId={user?.id}
-            profileImage={profileImage}
-            imageError={imageError}
-            darkMode={darkMode}
-            onImageChange={setProfileImage}
-            onErrorChange={setImageError}
-            containerStyle={styles.profileImageContainer}
-            fallbackImageStyle={styles.fallbackProfileImage}
-            gradientStyle={styles.gradientBackground}
-          />
+          <View style={styles.profileImageContainer}>
+            <View style={[styles.fallbackProfileImage, { backgroundColor: theme.primary }]}>
+              <User size={40} color="#FFFFFF" />
+            </View>
+          </View>
           
           <View style={styles.profileInfo}>
             <Text style={[styles.profileName, { color: theme.text }]}>
-              {user?.user_metadata?.username || (user?.email ? user.email.split('@')[0] : 'User')}
+              Guest User
             </Text>
             <Text style={[styles.profileEmail, { color: theme.secondaryText }]}>
-              {user?.email || 'user@example.com'}
+              Sign in to access your profile
             </Text>
-          </View>
-          <TouchableOpacity 
-            style={[styles.editButton, { borderColor: theme.buttonBorder }]}
-            onPress={handleEditPress}
-          >
-            <Text style={[styles.editButtonText, { color: theme.secondaryText }]}>Edit</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Account</Text>
-          <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
-            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
-              <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
-                  <User size={20} color={darkMode ? '#93C5FD' : '#3B82F6'} />
-                </View>
-                <Text style={[styles.settingsItemText, { color: theme.text }]}>Profile Information</Text>
-              </View>
-              <ChevronRight size={20} color={theme.secondaryText} />
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
-              <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#14532D' : '#F0FDF4' }]}>
-                  <Shield size={20} color={darkMode ? '#86EFAC' : '#22C55E'} />
-                </View>
-                <Text style={[styles.settingsItemText, { color: theme.text }]}>Privacy & Security</Text>
-              </View>
-              <ChevronRight size={20} color={theme.secondaryText} />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -162,34 +83,6 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.logoutContainer}>
-          <LogoutButton 
-            variant="contained"
-            color={darkMode ? '#4B5563' : '#E5E7EB'}
-            label="Log Out"
-            onLogoutComplete={() => console.log("Logged out from settings")} 
-          />
-        </View>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={editModalVisible}
-          onRequestClose={() => setEditModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <ProfileEditForm
-              username={username}
-              email={email}
-              user={user}
-              darkMode={darkMode}
-              theme={theme}
-              onClose={() => setEditModalVisible(false)}
-              onUpdateProfile={handleProfileUpdate}
-            />
-          </View>
-        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -198,7 +91,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor is now applied dynamically
   },
   header: {
     paddingHorizontal: 16,
@@ -208,7 +100,6 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    // color is now applied dynamically
   },
   contentContainer: {
     flex: 1,
@@ -217,7 +108,6 @@ const styles = StyleSheet.create({
   profileSection: {
     flexDirection: 'column',
     alignItems: 'center',
-    // backgroundColor is now applied dynamically
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -249,39 +139,22 @@ const styles = StyleSheet.create({
   profileName: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    // color is now applied dynamically
     marginBottom: 4,
   },
   profileEmail: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    // color is now applied dynamically
-  },
-  editButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    borderWidth: 1,
-    // borderColor is now applied dynamically
-  },
-  editButtonText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 14,
-    // color is now applied dynamically
   },
   sectionContainer: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 18,
-    // color is now applied dynamically
-    marginBottom: 12,
+    fontSize: 16,
+    marginBottom: 8,
   },
   settingsCard: {
-    // backgroundColor is now applied dynamically
     borderRadius: 12,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -294,44 +167,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    // borderBottomColor is now applied dynamically
   },
   settingsItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
-    marginRight: 12,
-    // backgroundColor is now applied dynamically
+    justifyContent: 'center',
+    marginRight: 16,
   },
   settingsItemText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
-    // color is now applied dynamically
-  },
-  logoutContainer: {
-    marginTop: 8,
-    marginBottom: 40,
-    width: '100%',
-    alignItems: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
   },
   gradientBackground: {
-    width: '100%',
-    height: '100%',
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 50,
   },
 });

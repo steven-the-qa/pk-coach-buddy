@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define theme colors
@@ -48,8 +48,12 @@ const ThemeContext = createContext<ThemeContextType>({
 // Storage key for persisting theme preference
 const DARK_MODE_STORAGE_KEY = 'darkMode';
 
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
 // Provider component
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [darkMode, setDarkMode] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 

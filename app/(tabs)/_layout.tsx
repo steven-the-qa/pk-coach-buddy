@@ -1,43 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Tabs, useRouter } from 'expo-router';
+import React from 'react';
+import { Tabs } from 'expo-router';
 import { Home, BookOpen, Calendar, Settings, FileText } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
-import { useAuth } from '../../lib/AuthContext';
-import LoadingScreen from '../../components/LoadingScreen';
 
 export default function TabLayout() {
   const { theme } = useTheme();
-  const { loading, session } = useAuth();
-  const router = useRouter();
-  const [isScreenMounted, setIsScreenMounted] = useState(false);
-  
-  // Mark component as mounted
-  useEffect(() => {
-    setIsScreenMounted(true);
-    return () => setIsScreenMounted(false);
-  }, []);
-  
-  // Check authentication only after component is mounted
-  useEffect(() => {
-    if (isScreenMounted && !loading && !session) {
-      // Small delay to ensure navigation is ready
-      const timer = setTimeout(() => {
-        router.replace('/auth');
-      }, 50);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isScreenMounted, loading, session, router]);
-  
-  // Show loading screen while checking auth
-  if (loading) {
-    return <LoadingScreen message="Loading your dashboard..." />;
-  }
-  
-  // If not authenticated and still on this screen, show loading until redirect happens
-  if (!session) {
-    return <LoadingScreen message="Preparing your experience..." />;
-  }
   
   return (
     <Tabs
