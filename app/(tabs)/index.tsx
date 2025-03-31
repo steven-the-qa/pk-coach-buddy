@@ -1,14 +1,13 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
-  Calendar, FileText, User, Zap, Target, Award, Clock, 
-  ClipboardList, Compass, Sparkles, ChartBar
+  Calendar, User, Zap, Target, Award, Clock, 
+  ClipboardList, Compass
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../lib/ThemeContext';
-import { router, useFocusEffect } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const { theme, darkMode } = useTheme();

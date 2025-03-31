@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Search, Filter, Clock, Users, Brain, Bot, Zap } from 'lucide-react-native';
+import { Plus, Search, Clock, Users, Zap } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 
 // Define the Session type

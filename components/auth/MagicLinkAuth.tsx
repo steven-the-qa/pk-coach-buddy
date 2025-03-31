@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, TextInput, TouchableOpacity, Text, StyleSheet, Alert,
+  KeyboardAvoidingView, Platform, SafeAreaView
+} from 'react-native';
+import { useTheme } from '../../lib/ThemeContext';
 import { supabase } from '../../lib/supabase';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
+import { Mail } from 'lucide-react-native';
 
 export function MagicLinkAuth() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // Handle deep linking
-    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        console.log('User signed in:', session.user.email);
-      }
-    });
-
-    return () => {
-      subscription.subscription.unsubscribe();
-    };
-  }, []);
+  const { theme, darkMode } = useTheme();
 
   const handleMagicLinkLogin = async () => {
+    if (!email) {
+      Alert.alert('Please enter your email');
+      return;
+    }
+    
     try {
       setLoading(true);
       const { error } = await supabase.auth.signInWithOtp({
@@ -35,7 +31,7 @@ export function MagicLinkAuth() {
       
       Alert.alert(
         'Check your email',
-        'We sent you a magic link to sign in to your account. Open the link on this device.'
+        'We sent you a magic link to sign in. Open the link on this device.'
       );
     } catch (error: any) {
       Alert.alert('Error', error.message || 'An error occurred');
@@ -45,50 +41,119 @@ export function MagicLinkAuth() {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={handleMagicLinkLogin}
-        disabled={loading}
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
       >
-        <Text style={styles.buttonText}>
-          {loading ? 'Sending magic link...' : 'Send Magic Link'}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.content}>
+          <Text style={[styles.title, { color: theme.text }]}>
+            Welcome to PK Coach Buddy
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+            Sign in with your email to continue
+          </Text>
+
+          <View style={[styles.inputContainer, { 
+            backgroundColor: theme.card,
+            borderColor: theme.border
+          }]}>
+            <Mail size={20} color={theme.secondaryText} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { color: theme.text }]}
+              placeholder="Enter your email"
+              placeholderTextColor={theme.secondaryText}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              editable={!loading}
+              accessibilityLabel="Email input field"
+              accessibilityHint="Enter your email address to receive a magic link"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, { 
+              backgroundColor: theme.primary,
+              opacity: loading ? 0.7 : 1 
+            }]}
+            onPress={handleMagicLinkLogin}
+            disabled={loading}
+            accessibilityLabel="Send magic link button"
+            accessibilityHint="Sends a magic link to your email for signing in"
+          >
+            <Text style={styles.buttonText}>
+              {loading ? 'Sending...' : 'Send Magic Link'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={[styles.helpText, { color: theme.secondaryText }]}>
+            We'll send you a secure link to sign in instantly
+          </Text>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    width: '100%',
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Inter-Bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    flex: 1,
+    height: 48,
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
   },
   button: {
-    backgroundColor: '#0284c7',
-    padding: 16,
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-Medium',
+  },
+  helpText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
 }); 

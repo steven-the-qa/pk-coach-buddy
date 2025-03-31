@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, Moon, Shield, User, LogOut, ChevronRight } from 'lucide-react-native';
+import { Moon, User, LogOut, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
 import { useAuth } from '../../lib/hooks/useAuth';
 
