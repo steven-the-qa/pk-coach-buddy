@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, Moon, Shield, CircleHelp as HelpCircle, ChevronRight, User } from 'lucide-react-native';
+import { Bell, Moon, Shield, User, LogOut, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../lib/ThemeContext';
+import { useAuth } from '../../lib/hooks/useAuth';
 
 export default function SettingsScreen() {  
   const { darkMode, setDarkMode, theme } = useTheme();
+  const { signOut } = useAuth();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -52,14 +54,17 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Support</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Account</Text>
           <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
-            <TouchableOpacity style={[styles.settingsItem, { borderBottomColor: theme.border }]}>
+            <TouchableOpacity 
+              style={[styles.settingsItem, { borderBottomWidth: 0 }]}
+              onPress={signOut}
+            >
               <View style={styles.settingsItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#1E3A8A' : '#EFF6FF' }]}>
-                  <HelpCircle size={20} color={darkMode ? '#93C5FD' : '#3B82F6'} />
+                <View style={[styles.iconContainer, { backgroundColor: darkMode ? '#7F1D1D' : '#FEE2E2' }]}>
+                  <LogOut size={20} color={darkMode ? '#FCA5A5' : '#EF4444'} />
                 </View>
-                <Text style={[styles.settingsItemText, { color: theme.text }]}>Help & Support</Text>
+                <Text style={[styles.settingsItemText, { color: theme.text }]}>Sign Out</Text>
               </View>
               <ChevronRight size={20} color={theme.secondaryText} />
             </TouchableOpacity>

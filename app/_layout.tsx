@@ -4,10 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider } from '../lib/ThemeContext';
+import { useAuth } from '../lib/hooks/useAuth';
+import { MagicLinkAuth } from '../components/auth/MagicLinkAuth';
 import 'react-native-url-polyfill/auto';
 import { Text, View } from 'react-native';
 import LoadingScreen from '../components/LoadingScreen';
 import * as Linking from 'expo-linking';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
@@ -51,6 +54,7 @@ export default function RootLayout() {
 // Navigation component
 function RootLayoutNav() {
   const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [initialRenderComplete, setInitialRenderComplete] = useState(false);
   
   const [fontsLoaded, fontError] = useFonts({
@@ -67,6 +71,11 @@ function RootLayoutNav() {
       const url = await Linking.getInitialURL();
       if (url) {
         console.log("App opened with URL:", url);
+        const { params } = QueryParams.getQueryParams(url);
+        if (params?.access_token) {
+          // Handle magic link auth redirect
+          router.replace('/(tabs)');
+        }
       }
     };
 
@@ -75,6 +84,11 @@ function RootLayoutNav() {
     // Listen for incoming links while the app is open
     const subscription = Linking.addEventListener('url', (event) => {
       console.log("Incoming link while app is open:", event.url);
+      const { params } = QueryParams.getQueryParams(event.url);
+      if (params?.access_token) {
+        // Handle magic link auth redirect
+        router.replace('/(tabs)');
+      }
     });
 
     return () => {
@@ -100,15 +114,8 @@ function RootLayoutNav() {
     }
   }, [fontsLoaded, fontError]);
 
-  // After removing auth, redirect to the main screen
-  useEffect(() => {
-    if (initialRenderComplete && (fontsLoaded || fontError)) {
-      router.replace('/(tabs)');
-    }
-  }, [initialRenderComplete, router, fontsLoaded, fontError]);
-
-  // Show loading screen while fonts are loading
-  if (!fontsLoaded && !fontError) {
+  // Show loading screen while fonts are loading or auth is being checked
+  if ((!fontsLoaded && !fontError) || authLoading) {
     return <LoadingScreen message="Starting app..." />;
   }
 
@@ -117,7 +124,12 @@ function RootLayoutNav() {
     return <View style={{ flex: 1 }} />;
   }
 
-  // This Slot renders the current route
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return <MagicLinkAuth />;
+  }
+
+  // This Slot renders the current route when authenticated
   return <Slot />;
 }
 

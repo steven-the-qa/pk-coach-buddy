@@ -1,28 +1,32 @@
 import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
-import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppState } from 'react-native';
 
-// Function to safely access nested properties
-const getExpoConstant = (path: string[], defaultValue: string = ''): string => {
-  let current: any = Constants;
-  for (const segment of path) {
-    if (current === undefined || current === null) return defaultValue;
-    current = current[segment];
-  }
-  return current || defaultValue;
-};
-
-// Get Supabase credentials
-const supabaseUrl = getExpoConstant(['expoConfig', 'extra', 'supabaseUrl']);
-const supabaseKey = getExpoConstant(['expoConfig', 'extra', 'supabaseKey']);
-
-// Validate credentials
-if (!supabaseUrl || !supabaseKey) {
-  console.warn('Supabase credentials are missing. Check your environment configuration.');
-}
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Initialize Supabase client
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
+// Tells Supabase Auth to continuously refresh the session automatically
+// if the app is in the foreground. When this is added, you will continue
+// to receive `onAuthStateChange` events with the `TOKEN_REFRESHED` or
+// `SIGNED_OUT` event if the user's session is terminated.
+AppState.addEventListener('change', (state) => {
+  if (state === 'active') {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
 
 // Database types
 export type CoachProfile = {

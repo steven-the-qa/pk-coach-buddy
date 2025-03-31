@@ -22,9 +22,9 @@
     "@supabase/supabase-js": "^2.49.1",
     "base-64": "^1.0.0",
     "expo": "~52.0.36",
-    "expo-auth-session": "^6.0.3",
+    "expo-auth-session": "~6.0.3",
     "expo-blur": "^14.0.3",
-    "expo-constants": "^17.0.5",
+    "expo-constants": "~17.0.8",
     "expo-dev-client": "~5.0.12",
     "expo-font": "^13.0.3",
     "expo-haptics": "^14.0.1",
@@ -38,7 +38,7 @@
     "expo-symbols": "^0.2.2",
     "expo-system-ui": "^4.0.7",
     "expo-updates": "~0.27.1",
-    "expo-web-browser": "^14.0.2",
+    "expo-web-browser": "~14.0.2",
     "lucide-react-native": "^0.475.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -60,7 +60,6 @@
     "@types/base-64": "^1.0.2",
     "@types/node": "^22.13.14",
     "@types/react": "~18.3.12",
-    "dotenv": "^16.4.7",
     "typescript": "^5.3.3"
   }
 }
